@@ -14,6 +14,8 @@ import {
   dataSourceLabel,
   genderOptions,
   inventoryProblemOptions,
+  isBusinessProfileComplete,
+  missingBusinessProfileFields,
   regionOptions,
   roleOptions,
   returnRateOptions,
@@ -21,6 +23,7 @@ import {
   saveBusinessProfile,
   type BusinessDataSource,
   type BusinessProfile,
+  type RequiredBusinessProfileField,
   type UploadedBusinessRow,
 } from "@/lib/business-profile";
 import { useBusinessProfile } from "@/lib/use-business-profile";
@@ -79,17 +82,27 @@ const modeOptions: {
 const inputClass =
   "mt-2 w-full rounded-2xl border border-[#d2c3ac] bg-[#fcf8f1] px-4 py-3 text-sm text-[#4b4137] outline-none transition placeholder:text-[#9b8f82] focus:border-[#8d8f6c] focus:ring-4 focus:ring-[#e7e5d7]";
 
+const errorInputClass =
+  "border-[#c98f7a] bg-[#fff8f3] focus:border-[#b87861] focus:ring-[#ead3c9]";
+
 function Field({
   label,
   children,
+  error,
 }: {
   label: string;
   children: React.ReactNode;
+  error?: boolean;
 }) {
   return (
     <label className="block text-xs font-bold text-[#655a4f]">
-      {label}
+      {label} <span className="text-[#a76550]">*</span>
       {children}
+      {error ? (
+        <span className="mt-1.5 block text-[10px] font-semibold text-[#a76550]">
+          This field is required.
+        </span>
+      ) : null}
     </label>
   );
 }
@@ -99,17 +112,28 @@ function SelectField({
   value,
   options,
   onChange,
+  error,
 }: {
   label: string;
   value: string;
   options: string[];
   onChange: (value: string) => void;
+  error?: boolean;
 }) {
   return (
-    <Field label={label}>
-      <select value={value} onChange={(event) => onChange(event.target.value)} className={inputClass}>
+    <Field label={label} error={error}>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className={`${inputClass} ${error ? errorInputClass : ""} ${value ? "" : "text-[#9b8f82]"}`}
+      >
+        <option value="" disabled>
+          Select value
+        </option>
         {options.map((option) => (
-          <option key={option}>{option}</option>
+          <option key={option} value={option} className="text-[#4b4137]">
+            {option}
+          </option>
         ))}
       </select>
     </Field>
@@ -119,11 +143,13 @@ function SelectField({
 function RegionMultiSelect({
   value,
   onChange,
+  error,
 }: {
   value: string[];
   onChange: (value: string[]) => void;
+  error?: boolean;
 }) {
-  const selected = value.length > 0 ? value : [regionOptions[0]];
+  const selected = value;
 
   function toggle(region: string) {
     if (region === "Entire India") {
@@ -135,32 +161,44 @@ function RegionMultiSelect({
     const next = withoutAllIndia.includes(region)
       ? withoutAllIndia.filter((item) => item !== region)
       : [...withoutAllIndia, region];
-    onChange(next.length > 0 ? next : ["Entire India"]);
+    onChange(next);
   }
 
   return (
     <div className="sm:col-span-2">
-      <p className="text-xs font-bold text-[#655a4f]">Main Selling Regions</p>
-      <details className="group mt-2 rounded-2xl border border-[#d2c3ac] bg-[#fcf8f1] open:border-[#8d8f6c] open:ring-4 open:ring-[#e7e5d7]">
+      <p className="text-xs font-bold text-[#655a4f]">
+        Main Selling Regions <span className="text-[#a76550]">*</span>
+      </p>
+      <details
+        className={`group mt-2 rounded-2xl border bg-[#fcf8f1] open:ring-4 ${
+          error
+            ? "border-[#c98f7a] bg-[#fff8f3] open:border-[#b87861] open:ring-[#ead3c9]"
+            : "border-[#d2c3ac] open:border-[#8d8f6c] open:ring-[#e7e5d7]"
+        }`}
+      >
         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 text-sm text-[#4b4137]">
-          <span className="min-w-0 truncate font-semibold">
-            {selected.includes("Entire India")
+          <span className={`min-w-0 truncate font-semibold ${selected.length ? "" : "text-[#9b8f82]"}`}>
+            {selected.length === 0
+              ? "Select one or more regions"
+              : selected.includes("Entire India")
               ? "Entire India"
               : `${selected.length} region${selected.length === 1 ? "" : "s"} selected`}
           </span>
           <span className="text-[#7b805f] transition group-open:rotate-45">+</span>
         </summary>
         <div className="border-t border-[#d9ccb8] p-3">
-          <div className="mb-3 flex flex-wrap gap-2">
-            {selected.map((region) => (
-              <span
-                key={region}
-                className="rounded-full border border-[#aeb495]/50 bg-[#e5e8dc] px-2.5 py-1 text-[10px] font-bold text-[#596149]"
-              >
-                {region}
-              </span>
-            ))}
-          </div>
+          {selected.length > 0 ? (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {selected.map((region) => (
+                <span
+                  key={region}
+                  className="rounded-full border border-[#aeb495]/50 bg-[#e5e8dc] px-2.5 py-1 text-[10px] font-bold text-[#596149]"
+                >
+                  {region}
+                </span>
+              ))}
+            </div>
+          ) : null}
           <div className="grid max-h-64 gap-1 overflow-y-auto pr-1 sm:grid-cols-2">
             {regionOptions.map((region) => {
               const checked = selected.includes(region);
@@ -189,6 +227,11 @@ function RegionMultiSelect({
           </p>
         </div>
       </details>
+      {error ? (
+        <p className="mt-1.5 text-[10px] font-semibold text-[#a76550]">
+          Select at least one region.
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -218,10 +261,22 @@ function BusinessSetupForm({
   const [profile, setProfile] = useState<BusinessProfile>(initialProfile);
   const [uploadedRows, setUploadedRows] = useState<UploadedBusinessRow[]>(loadUploadedRows);
   const [csvError, setCsvError] = useState("");
+  const [missingFields, setMissingFields] = useState<Set<RequiredBusinessProfileField>>(
+    new Set(),
+  );
+  const [validationError, setValidationError] = useState("");
 
   function update<K extends keyof BusinessProfile>(key: K, value: BusinessProfile[K]) {
     onSavedChange(false);
     setProfile((current) => ({ ...current, [key]: value }));
+    if (missingFields.has(key as RequiredBusinessProfileField)) {
+      setMissingFields((current) => {
+        const next = new Set(current);
+        next.delete(key as RequiredBusinessProfileField);
+        return next;
+      });
+    }
+    setValidationError("");
   }
 
   function chooseMode(nextMode: BusinessDataSource) {
@@ -272,6 +327,14 @@ function BusinessSetupForm({
 
   function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const missing = missingBusinessProfileFields(profile);
+    if (missing.length > 0) {
+      setMissingFields(new Set(missing));
+      setValidationError("Please complete all required fields to improve report accuracy.");
+      onSavedChange(false);
+      return;
+    }
+
     if (mode === "csv" && uploadedRows.length === 0) {
       setCsvError("Upload a valid CSV before saving this data source.");
       return;
@@ -284,20 +347,21 @@ function BusinessSetupForm({
     const nextProfile = saveBusinessProfile({
       ...profile,
       source: mode,
-      topProductCategories:
-        profile.topProductCategories.length > 0
-          ? profile.topProductCategories
-          : [profile.primaryCategory],
       uploadedRowCount: mode === "csv" ? uploadedRows.length : 0,
       updatedAt: new Date().toISOString(),
     });
     setProfile(nextProfile);
 
     onSavedChange(true);
+    setMissingFields(new Set());
+    setValidationError("");
   }
 
+  const profileComplete = isBusinessProfileComplete(profile);
+  const hasError = (field: RequiredBusinessProfileField) => missingFields.has(field);
+
   return (
-    <form onSubmit={save}>
+    <form onSubmit={save} noValidate>
       <section className="grid gap-4 md:grid-cols-3">
         {modeOptions.map((option) => {
           const active = mode === option.value;
@@ -337,20 +401,34 @@ function BusinessSetupForm({
             <h2 className="editorial-serif mt-2 text-2xl font-semibold tracking-[-0.02em] text-[#40362c]">
               Configure your business context
             </h2>
+            <p className="mt-2 max-w-2xl text-xs leading-5 text-[#817467]">
+              Complete all fields so TrendMerch AI can generate more accurate merchandising
+              insights and reports.
+            </p>
           </div>
-          <span className="w-fit rounded-full border border-[#879174]/40 bg-[#e4e8da] px-3 py-1.5 text-[10px] font-bold text-[#596149]">
-            Stored locally in this browser
-          </span>
+          <div className="flex flex-wrap gap-2">
+            <span
+              className={`w-fit rounded-full border px-3 py-1.5 text-[10px] font-bold ${
+                profileComplete
+                  ? "border-[#879174]/40 bg-[#e4e8da] text-[#596149]"
+                  : "border-[#c89b86]/55 bg-[#f3e3da] text-[#955f49]"
+              }`}
+            >
+              {profileComplete ? "Profile complete" : "Profile incomplete"}
+            </span>
+            <span className="w-fit rounded-full border border-[#cdbda4] bg-[#f4ede2] px-3 py-1.5 text-[10px] font-bold text-[#76695c]">
+              Stored locally
+            </span>
+          </div>
         </div>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <Field label="Company Name">
+          <Field label="Company Name / Workspace Name" error={hasError("companyName")}>
             <input
               value={profile.companyName}
               onChange={(event) => update("companyName", event.target.value)}
               placeholder="Your company or brand"
-              className={inputClass}
-              required
+              className={`${inputClass} ${hasError("companyName") ? errorInputClass : ""}`}
             />
           </Field>
           <SelectField
@@ -358,31 +436,35 @@ function BusinessSetupForm({
             value={profile.role}
             options={roleOptions}
             onChange={(value) => update("role", value)}
+            error={hasError("role")}
           />
           <SelectField
             label="Brand Type"
             value={profile.brandType}
             options={brandTypeOptions}
             onChange={(value) => update("brandType", value)}
+            error={hasError("brandType")}
           />
           <SelectField
             label="Business Goal for This Month"
             value={profile.businessGoal}
             options={businessGoalOptions}
             onChange={(value) => update("businessGoal", value)}
+            error={hasError("businessGoal")}
           />
 
-          {mode === "demo" ? (
+          {mode === "demo" || mode === "csv" ? (
             <>
-              <SelectField label="Primary Category" value={profile.primaryCategory} options={categoryOptions} onChange={(value) => { update("primaryCategory", value); update("topProductCategories", [value]); }} />
-              <SelectField label="Monthly Revenue Range" value={profile.monthlyRevenueRange} options={revenueRangeOptions} onChange={(value) => update("monthlyRevenueRange", value)} />
-              <SelectField label="Average Order Value" value={profile.averageOrderValue} options={averageOrderValueOptions} onChange={(value) => update("averageOrderValue", value)} />
-              <SelectField label="Target Age Group" value={profile.targetAgeGroup} options={ageGroupOptions} onChange={(value) => update("targetAgeGroup", value)} />
-              <SelectField label="Target Gender" value={profile.targetGender} options={genderOptions} onChange={(value) => update("targetGender", value)} />
-              <RegionMultiSelect value={profile.mainRegions} onChange={(value) => update("mainRegions", value)} />
-              <SelectField label="Biggest Challenge" value={profile.biggestBusinessChallenge} options={challengeOptions} onChange={(value) => update("biggestBusinessChallenge", value)} />
-              <SelectField label="Return Rate Range" value={profile.returnRateRange} options={returnRateOptions} onChange={(value) => update("returnRateRange", value)} />
-              <SelectField label="Inventory Problem" value={profile.inventoryProblem} options={inventoryProblemOptions} onChange={(value) => update("inventoryProblem", value)} />
+              <SelectField label="Primary Category" value={profile.primaryCategory} options={categoryOptions} onChange={(value) => update("primaryCategory", value)} error={hasError("primaryCategory")} />
+              <SelectField label="Top Product Categories" value={profile.topProductCategories[0] ?? ""} options={categoryOptions} onChange={(value) => update("topProductCategories", value ? [value] : [])} error={hasError("topProductCategories")} />
+              <SelectField label="Monthly Revenue Range" value={profile.monthlyRevenueRange} options={revenueRangeOptions} onChange={(value) => update("monthlyRevenueRange", value)} error={hasError("monthlyRevenueRange")} />
+              <SelectField label="Average Order Value" value={profile.averageOrderValue} options={averageOrderValueOptions} onChange={(value) => update("averageOrderValue", value)} error={hasError("averageOrderValue")} />
+              <SelectField label="Target Age Group" value={profile.targetAgeGroup} options={ageGroupOptions} onChange={(value) => update("targetAgeGroup", value)} error={hasError("targetAgeGroup")} />
+              <SelectField label="Target Gender" value={profile.targetGender} options={genderOptions} onChange={(value) => update("targetGender", value)} error={hasError("targetGender")} />
+              <RegionMultiSelect value={profile.mainRegions} onChange={(value) => update("mainRegions", value)} error={hasError("mainRegions")} />
+              <SelectField label="Biggest Business Challenge" value={profile.biggestBusinessChallenge} options={challengeOptions} onChange={(value) => update("biggestBusinessChallenge", value)} error={hasError("biggestBusinessChallenge")} />
+              <SelectField label="Return Rate Range" value={profile.returnRateRange} options={returnRateOptions} onChange={(value) => update("returnRateRange", value)} error={hasError("returnRateRange")} />
+              <SelectField label="Inventory Problem" value={profile.inventoryProblem} options={inventoryProblemOptions} onChange={(value) => update("inventoryProblem", value)} error={hasError("inventoryProblem")} />
             </>
           ) : null}
 
@@ -400,7 +482,7 @@ function BusinessSetupForm({
                 ["Return Rate Range", "returnRateRange"],
                 ["Inventory Problem", "inventoryProblem"],
               ] as const).map(([label, key]) => (
-                <Field key={key} label={label}>
+                <Field key={key} label={label} error={hasError(key)}>
                   <input
                     value={Array.isArray(profile[key]) ? profile[key].join(", ") : profile[key]}
                     onChange={(event) =>
@@ -412,7 +494,7 @@ function BusinessSetupForm({
                       )
                     }
                     placeholder={key === "mainRegions" || key === "topProductCategories" ? "Separate values with commas" : `Enter ${label.toLowerCase()}`}
-                    className={inputClass}
+                    className={`${inputClass} ${hasError(key) ? errorInputClass : ""}`}
                   />
                 </Field>
               ))}
@@ -476,12 +558,25 @@ function BusinessSetupForm({
           </div>
         ) : null}
 
-        <div className="mt-7 flex flex-col gap-3 border-t border-[#d9ccb8] pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-[#887b6e]">
-            {saved
-              ? "Setup saved. Dashboard, AI Assistant, and Merchandising Report now use this profile."
-              : "Save to activate this profile across TrendMerch AI."}
+        {validationError ? (
+          <p className="mt-6 rounded-2xl border border-[#c98f7a] bg-[#f7e8e0] px-4 py-3 text-xs font-bold text-[#955f49]">
+            {validationError}
           </p>
+        ) : null}
+
+        <div className="mt-7 flex flex-col gap-3 border-t border-[#d9ccb8] pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs text-[#887b6e]">
+              {saved
+                ? "Setup saved. Dashboard, AI Assistant, and Merchandising Report now use this profile."
+                : "Save to activate this profile across TrendMerch AI."}
+            </p>
+            {!profileComplete ? (
+              <p className="mt-1 text-[10px] font-semibold text-[#9a6854]">
+                Complete the required fields before saving.
+              </p>
+            ) : null}
+          </div>
           <button
             type="submit"
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#3d352d] px-5 py-3 text-sm font-bold text-[#fff8ec] shadow-[0_10px_24px_rgba(55,45,36,0.16)] transition hover:bg-[#4b4136]"

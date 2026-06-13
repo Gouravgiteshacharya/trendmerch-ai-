@@ -27,8 +27,8 @@ function OnboardingForm({
   const [workspaceName, setWorkspaceName] = useState(
     hasSavedProfile ? profile.companyName : "",
   );
-  const [role, setRole] = useState(profile.role);
-  const [brandType, setBrandType] = useState(profile.brandType);
+  const [role, setRole] = useState(profile.role || roleOptions[3]);
+  const [brandType, setBrandType] = useState(profile.brandType || brandTypeOptions[0]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

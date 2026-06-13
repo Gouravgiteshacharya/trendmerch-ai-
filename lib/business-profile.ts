@@ -36,6 +36,22 @@ export type UploadedBusinessRow = {
   customer_gender: string;
 };
 
+export type RequiredBusinessProfileField =
+  | "companyName"
+  | "role"
+  | "brandType"
+  | "primaryCategory"
+  | "monthlyRevenueRange"
+  | "averageOrderValue"
+  | "targetAgeGroup"
+  | "targetGender"
+  | "mainRegions"
+  | "topProductCategories"
+  | "biggestBusinessChallenge"
+  | "returnRateRange"
+  | "inventoryProblem"
+  | "businessGoal";
+
 export const BUSINESS_PROFILE_KEY = "trendmerch-business-profile";
 export const UPLOADED_DATA_KEY = "trendmerch-uploaded-business-data";
 export const BUSINESS_PROFILE_EVENT = "trendmerch-profile-updated";
@@ -144,20 +160,20 @@ export const businessGoalOptions = [
 
 export const defaultBusinessProfile: BusinessProfile = {
   source: "demo",
-  companyName: "Demo Fashion Co.",
-  role: roleOptions[3],
-  brandType: brandTypeOptions[0],
-  primaryCategory: categoryOptions[0],
-  monthlyRevenueRange: revenueRangeOptions[2],
-  averageOrderValue: averageOrderValueOptions[2],
-  targetAgeGroup: ageGroupOptions[1],
-  targetGender: genderOptions[2],
-  mainRegions: [regionOptions[0]],
-  topProductCategories: [categoryOptions[0]],
-  biggestBusinessChallenge: challengeOptions[0],
-  returnRateRange: returnRateOptions[1],
-  inventoryProblem: inventoryProblemOptions[0],
-  businessGoal: businessGoalOptions[0],
+  companyName: "",
+  role: "",
+  brandType: "",
+  primaryCategory: "",
+  monthlyRevenueRange: "",
+  averageOrderValue: "",
+  targetAgeGroup: "",
+  targetGender: "",
+  mainRegions: [],
+  topProductCategories: [],
+  biggestBusinessChallenge: "",
+  returnRateRange: "",
+  inventoryProblem: "",
+  businessGoal: "",
   uploadedRowCount: 0,
   updatedAt: "",
 };
@@ -234,6 +250,34 @@ export function saveBusinessProfile(profile: BusinessProfile) {
   return normalized;
 }
 
+export const requiredBusinessProfileFields: RequiredBusinessProfileField[] = [
+  "companyName",
+  "role",
+  "brandType",
+  "primaryCategory",
+  "monthlyRevenueRange",
+  "averageOrderValue",
+  "targetAgeGroup",
+  "targetGender",
+  "mainRegions",
+  "topProductCategories",
+  "biggestBusinessChallenge",
+  "returnRateRange",
+  "inventoryProblem",
+  "businessGoal",
+];
+
+export function missingBusinessProfileFields(profile: BusinessProfile) {
+  return requiredBusinessProfileFields.filter((field) => {
+    const value = profile[field];
+    return Array.isArray(value) ? value.length === 0 : !value.trim();
+  });
+}
+
+export function isBusinessProfileComplete(profile: BusinessProfile) {
+  return missingBusinessProfileFields(profile).length === 0;
+}
+
 export function dataSourceLabel(source: BusinessDataSource) {
   if (source === "csv") return "Uploaded CSV";
   if (source === "manual") return "Manual Setup";
@@ -284,5 +328,5 @@ export function businessGoalGuidance(goal: string) {
       "Prioritize loyal customer segments, best-performing categories, retention offers, and replenishable favorites.",
   };
 
-  return guidance[goal] ?? guidance[defaultBusinessProfile.businessGoal];
+  return guidance[goal] ?? guidance["Increase revenue"];
 }
