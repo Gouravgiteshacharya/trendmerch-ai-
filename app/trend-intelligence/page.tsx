@@ -1,6 +1,9 @@
+"use client";
+
+import { DataEmptyState } from "@/components/DataEmptyState";
 import { PageHeader } from "@/components/PageHeader";
-import { fashionRetailData } from "@/data/fashion-retail-data";
 import { trendIntelligence, type TrendDuration } from "@/lib/intelligence";
+import { useAnalyticsData } from "@/lib/use-analytics-data";
 
 const durationStyles: Record<TrendDuration, string> = {
   "Viral spike": "bg-[#f8e3df] text-[#9c5a50]",
@@ -14,7 +17,8 @@ function signedPercent(value: number) {
 }
 
 export default function TrendIntelligencePage() {
-  const trends = trendIntelligence(fashionRetailData);
+  const { records, timeframe, hasEnoughData } = useAnalyticsData();
+  const trends = hasEnoughData ? trendIntelligence(records) : [];
   const rising = trends.filter((trend) => trend.growth > 0);
   const viral = trends.filter((trend) => trend.duration === "Viral spike");
   const leadTrend = trends[0];
@@ -26,6 +30,10 @@ export default function TrendIntelligencePage() {
         description="Rank emerging product signals, estimate their staying power, and translate momentum into merchandising action."
       />
 
+      {!hasEnoughData ? (
+        <DataEmptyState timeframe={timeframe} recordCount={records.length} />
+      ) : (
+        <>
       <section className="grid gap-4 sm:grid-cols-3">
         {[
           { label: "Rising products", value: rising.length, tone: "bg-[#eee8f6]" },
@@ -144,7 +152,8 @@ export default function TrendIntelligencePage() {
           ))}
         </div>
       </section>
+        </>
+      )}
     </>
   );
 }
-

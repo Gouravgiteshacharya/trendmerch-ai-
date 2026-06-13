@@ -1,4 +1,6 @@
 import { Icon } from "@/components/icons";
+import { TimeframeBadge } from "@/components/TimeframeBadge";
+import { TimeframeControl } from "@/components/TimeframeControl";
 
 type PageHeaderProps = {
   eyebrow?: string;
@@ -23,9 +25,11 @@ export function PageHeader({
           {title}
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[#7d7888]">{description}</p>
+        <TimeframeBadge className="mt-3" />
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {children}
+        <TimeframeControl />
         <button
           aria-label="Search"
           className="grid size-10 place-items-center rounded-2xl border border-white bg-white/75 text-[#817b8b] shadow-[0_8px_24px_rgba(48,41,61,0.06)]"

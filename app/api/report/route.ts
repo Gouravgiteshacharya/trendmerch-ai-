@@ -1,11 +1,19 @@
 import OpenAI from "openai";
+import { fashionRetailData } from "@/data/fashion-retail-data";
 import { generateWeeklyReport } from "@/lib/ai-insights";
 import { buildBusinessContext } from "@/lib/business-context";
+import { normalizeBusinessProfile } from "@/lib/business-profile";
+import { normalizeFashionRecords } from "@/lib/data-source";
+import { buildReportEvidence } from "@/lib/explainability";
+import { filterDataByTimeframe, normalizeTimeframe, timeframeLabel } from "@/lib/timeframe";
 
 export const runtime = "nodejs";
 
 type ReportRequest = {
   type?: unknown;
+  profile?: unknown;
+  timeframe?: unknown;
+  records?: unknown;
 };
 
 const reportFormat = `Use exactly these seven uppercase section headings, in this order:
@@ -58,11 +66,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const fallback = generateWeeklyReport().copyText;
+  const profile = normalizeBusinessProfile(body.profile);
+  const timeframe = normalizeTimeframe(body.timeframe);
+  const uploadedRecords = normalizeFashionRecords(body.records);
+  const sourceRecords =
+    profile?.source === "csv" && uploadedRecords ? uploadedRecords : fashionRetailData;
+  const records = filterDataByTimeframe(sourceRecords, timeframe);
+  const fallback = generateWeeklyReport(profile, records, timeframe).copyText;
+  const evidence = buildReportEvidence(records);
 
   if (!process.env.OPENAI_API_KEY) {
     console.log("Using fallback response");
-    return Response.json({ report: fallback, source: "fallback" });
+    return Response.json({ report: fallback, source: "fallback", evidence });
   }
 
   try {
@@ -71,17 +86,17 @@ export async function POST(request: Request) {
       model: process.env.OPENAI_MODEL ?? "gpt-5-mini",
       instructions:
         "You are TrendMerch AI, a senior fashion merchandising analyst preparing a weekly leadership brief. Use only the supplied business context, preserve numerical accuracy, prioritize decisions, and do not invent facts. Write clear professional merchandising language.",
-      input: `${buildBusinessContext()}\n\nREPORT INSTRUCTIONS\nCreate the weekly merchandising report for Week 24, 2026.\n${reportFormat}`,
+      input: `${buildBusinessContext(profile, records, timeframe)}\n\nREPORT INSTRUCTIONS\nCreate the merchandising report for the selected timeframe: ${timeframeLabel(timeframe)}. Tailor recommendations to the supplied company profile when relevant.\n${reportFormat}`,
     });
 
     const report = response.output_text.trim();
     if (!report) {
       console.log("Using fallback response");
-      return Response.json({ report: fallback, source: "fallback" });
+      return Response.json({ report: fallback, source: "fallback", evidence });
     }
 
     console.log("Using OpenAI response");
-    return Response.json({ report, source: "openai" });
+    return Response.json({ report, source: "openai", evidence });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`OpenAI error: ${message}`);
@@ -89,6 +104,7 @@ export async function POST(request: Request) {
     return Response.json({
       report: fallback,
       source: "fallback",
+      evidence,
       ...(isQuotaError(error) ? { note: quotaNote } : {}),
     });
   }

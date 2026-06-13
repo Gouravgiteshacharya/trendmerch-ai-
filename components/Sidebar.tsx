@@ -10,6 +10,7 @@ const navigation: { label: string; href: string; icon: IconName }[] = [
   { label: "Geo Demand", href: "/geo-demand", icon: "geo" },
   { label: "Customer Segments", href: "/customer-segments", icon: "customers" },
   { label: "Trend Intelligence", href: "/trend-intelligence", icon: "trend" },
+  { label: "Business Setup", href: "/business-setup", icon: "products" },
   { label: "AI Chat", href: "/ai-chat", icon: "chat" },
   { label: "Weekly Report", href: "/weekly-report", icon: "report" },
 ];

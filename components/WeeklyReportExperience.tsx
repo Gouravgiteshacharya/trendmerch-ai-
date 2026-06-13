@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/icons";
+import type { FashionRetailRecord } from "@/data/fashion-retail-data";
 import { generateWeeklyReport, type WeeklyReport } from "@/lib/ai-insights";
+import type { BusinessProfile } from "@/lib/business-profile";
+import {
+  buildReportEvidence,
+  type EvidenceSection,
+} from "@/lib/explainability";
+import { timeframeLabel, type Timeframe } from "@/lib/timeframe";
+import { useAnalyticsData } from "@/lib/use-analytics-data";
 
 const sectionTones = [
   "from-[#eee9f6] to-white",
@@ -33,8 +41,13 @@ function normalizeHeading(line: string) {
     .toLowerCase();
 }
 
-function parseGeneratedReport(text: string): WeeklyReport {
-  const fallback = generateWeeklyReport();
+function parseGeneratedReport(
+  text: string,
+  profile: BusinessProfile,
+  records: FashionRetailRecord[],
+  timeframe: Timeframe,
+): WeeklyReport {
+  const fallback = generateWeeklyReport(profile, records, timeframe);
   const sections = reportHeadings.map((heading) => {
     const lines = text.split(/\r?\n/);
     const start = lines.findIndex((line) => normalizeHeading(line) === heading.toLowerCase());
@@ -64,9 +77,9 @@ function parseGeneratedReport(text: string): WeeklyReport {
   });
 
   return {
-    title: "Weekly Merchandising Intelligence Report",
-    period: "Data through 12 June 2026",
-    generatedAt: "Week 24, 2026",
+    title: `${profile.companyName} Weekly Merchandising Report`,
+    period: `Selected timeframe: ${timeframeLabel(timeframe)}`,
+    generatedAt: fallback.generatedAt,
     sections,
     copyText: text,
   };
@@ -76,53 +89,69 @@ export function WeeklyReportExperience() {
   const [report, setReport] = useState<WeeklyReport | null>(null);
   const [source, setSource] = useState<"openai" | "fallback" | null>(null);
   const [sourceNote, setSourceNote] = useState<string | null>(null);
+  const [evidence, setEvidence] = useState<EvidenceSection[]>([]);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [isLoading, setIsLoading] = useState(false);
+  const [generatedFor, setGeneratedFor] = useState<Timeframe | null>(null);
+  const { profile, records, sourceData, timeframe, isUploadedData } = useAnalyticsData();
+  const visibleReport = generatedFor === timeframe ? report : null;
 
   async function generate() {
     if (isLoading) return;
     setIsLoading(true);
     setCopyStatus("idle");
 
-    const fallback = generateWeeklyReport();
+    const fallback = generateWeeklyReport(profile, records, timeframe);
     let nextReport = fallback;
     let nextSource: "openai" | "fallback" = "fallback";
     let nextSourceNote: string | null = null;
+    let nextEvidence = buildReportEvidence(records);
 
     try {
       const response = await fetch("/api/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "weekly" }),
+        body: JSON.stringify({
+          type: "weekly",
+          profile,
+          timeframe,
+          records: isUploadedData ? sourceData : undefined,
+        }),
       });
       const data = (await response.json()) as {
         report?: unknown;
         source?: unknown;
         note?: unknown;
+        evidence?: unknown;
       };
 
       if (response.ok && typeof data.report === "string" && data.report.trim()) {
-        nextReport = parseGeneratedReport(data.report);
+        nextReport = parseGeneratedReport(data.report, profile, records, timeframe);
         nextSource = data.source === "openai" ? "openai" : "fallback";
         nextSourceNote = typeof data.note === "string" ? data.note : null;
+        if (Array.isArray(data.evidence)) {
+          nextEvidence = data.evidence as EvidenceSection[];
+        }
       }
     } catch {
       // Keep the complete local report when the API route is unreachable.
     }
 
     setReport(nextReport);
+    setGeneratedFor(timeframe);
     setSource(nextSource);
     setSourceNote(nextSourceNote);
+    setEvidence(nextEvidence);
     setIsLoading(false);
   }
 
   async function copyReport() {
-    if (!report) return;
+    if (!visibleReport) return;
     let copied = false;
 
     try {
       if (navigator.clipboard) {
-        await navigator.clipboard.writeText(report.copyText);
+        await navigator.clipboard.writeText(visibleReport.copyText);
         copied = true;
       }
     } catch {
@@ -131,7 +160,7 @@ export function WeeklyReportExperience() {
 
     if (!copied) {
       const textArea = document.createElement("textarea");
-      textArea.value = report.copyText;
+      textArea.value = visibleReport.copyText;
       textArea.style.position = "fixed";
       textArea.style.opacity = "0";
       document.body.appendChild(textArea);
@@ -172,14 +201,14 @@ export function WeeklyReportExperience() {
             <Icon name="sparkles" className={`size-4 ${isLoading ? "animate-pulse" : ""}`} />
             {isLoading
               ? "Generating Report..."
-              : report
+              : visibleReport
                 ? "Regenerate Report"
                 : "Generate Weekly Report"}
           </button>
         </div>
       </section>
 
-      {!report ? (
+      {!visibleReport ? (
         <section className="soft-card subtle-grid mt-5 flex min-h-[360px] items-center justify-center rounded-3xl p-8 text-center">
           <div className="max-w-md">
             <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#eee8f5] text-[#745f91]">
@@ -200,10 +229,10 @@ export function WeeklyReportExperience() {
           <div className="mt-5 flex flex-col gap-4 rounded-3xl border border-white bg-white/65 p-5 shadow-[0_12px_36px_rgba(58,48,82,0.06)] sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.13em] text-[#9a86b2]">
-                {report.generatedAt}
+                {visibleReport.generatedAt}
               </p>
-              <h2 className="mt-1 text-lg font-bold text-[#3f3946]">{report.title}</h2>
-              <p className="mt-1 text-xs text-[#918a95]">{report.period}</p>
+              <h2 className="mt-1 text-lg font-bold text-[#3f3946]">{visibleReport.title}</h2>
+              <p className="mt-1 text-xs text-[#918a95]">{visibleReport.period}</p>
               {source ? (
                 <span
                   className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.08em] ${
@@ -235,9 +264,31 @@ export function WeeklyReportExperience() {
             </button>
           </div>
 
+          <section className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {evidence.map((section) => (
+              <details
+                key={section.title}
+                className="group rounded-2xl border border-white bg-white/65 shadow-[0_10px_30px_rgba(58,48,82,0.05)] md:last:col-span-2 xl:last:col-span-1"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-xs font-bold text-[#584f61]">
+                  {section.title}
+                  <span className="text-base text-[#88749d] transition group-open:rotate-45">+</span>
+                </summary>
+                <dl className="space-y-2 border-t border-[#eeeaf0] p-3">
+                  {section.items.map((item) => (
+                    <div key={`${section.title}-${item.label}`} className="rounded-xl bg-[#faf7fb] px-3 py-2">
+                      <dt className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#9a91a0]">{item.label}</dt>
+                      <dd className="mt-1 text-[11px] font-semibold leading-5 text-[#5e5664]">{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </details>
+            ))}
+          </section>
+
           <section className="mt-5 grid gap-5 xl:grid-cols-2">
-            {report.sections.map((section, index) => {
-              const dark = index === report.sections.length - 1;
+            {visibleReport.sections.map((section, index) => {
+              const dark = index === visibleReport.sections.length - 1;
               return (
                 <article
                   key={section.title}

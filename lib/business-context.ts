@@ -1,6 +1,6 @@
 import "server-only";
 
-import { fashionRetailData } from "@/data/fashion-retail-data";
+import { fashionRetailData, type FashionRetailRecord } from "@/data/fashion-retail-data";
 import {
   demandByAgeGroup,
   demandByGender,
@@ -16,6 +16,8 @@ import {
   totalUnitsSold,
   trendScoreByProduct,
 } from "@/lib/analytics";
+import { businessProfileContext, type BusinessProfile } from "@/lib/business-profile";
+import { defaultTimeframe, timeframeLabel, type Timeframe } from "@/lib/timeframe";
 
 const currency = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -29,24 +31,39 @@ const compactList = <T>(
   limit = 5,
 ) => items.slice(0, limit).map(formatter).join("; ");
 
-export function buildBusinessContext() {
-  const revenue = totalRevenue(fashionRetailData);
-  const units = totalUnitsSold(fashionRetailData);
-  const returns = returnRate(fashionRetailData);
-  const topProducts = topSellingProducts(fashionRetailData);
-  const stockRisks = stockoutRiskProducts(fashionRetailData);
-  const slowProducts = slowMovingProducts(fashionRetailData);
-  const returnRisks = highReturnProducts(fashionRetailData);
-  const categories = salesByCategory(fashionRetailData);
-  const states = demandByState(fashionRetailData);
-  const ages = demandByAgeGroup(fashionRetailData);
-  const genders = demandByGender(fashionRetailData);
-  const sizes = sizeWiseDemand(fashionRetailData);
-  const trends = trendScoreByProduct(fashionRetailData);
+export function buildBusinessContext(
+  profile?: BusinessProfile | null,
+  records: FashionRetailRecord[] = fashionRetailData,
+  timeframe: Timeframe = defaultTimeframe,
+) {
+  if (records.length < 3) {
+    return [
+      "TRENDMERCH AI BUSINESS CONTEXT",
+      businessProfileContext(profile ?? null),
+      `Selected timeframe: ${timeframeLabel(timeframe)}.`,
+      `Only ${records.length} usable records are available. Recommend switching to Last 30 Days, Last 1 Year, or All Time.`,
+    ].join("\n");
+  }
+
+  const revenue = totalRevenue(records);
+  const units = totalUnitsSold(records);
+  const returns = returnRate(records);
+  const topProducts = topSellingProducts(records);
+  const stockRisks = stockoutRiskProducts(records);
+  const slowProducts = slowMovingProducts(records);
+  const returnRisks = highReturnProducts(records);
+  const categories = salesByCategory(records);
+  const states = demandByState(records);
+  const ages = demandByAgeGroup(records);
+  const genders = demandByGender(records);
+  const sizes = sizeWiseDemand(records);
+  const trends = trendScoreByProduct(records);
 
   return [
     "TRENDMERCH AI BUSINESS CONTEXT",
-    `Dataset: ${fashionRetailData.length} fashion retail orders through 12 June 2026.`,
+    businessProfileContext(profile ?? null),
+    `Analyze the data for the selected timeframe: ${timeframeLabel(timeframe)}.`,
+    `Dataset: ${records.length} fashion retail orders in the selected timeframe.`,
     `Core KPIs: revenue ${currency.format(revenue)}; units sold ${units}; return rate ${returns.toFixed(1)}%.`,
     `Top selling products: ${compactList(topProducts, (product) => `${product.productName} (${product.unitsSold} units, ${currency.format(product.revenue)} revenue)`)}`,
     `Stockout risks: ${compactList(stockRisks, (product) => `${product.productName} (${product.stockAvailable} stock, ${product.unitsSold} sold)`) || "none"}`,

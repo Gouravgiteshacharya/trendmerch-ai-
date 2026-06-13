@@ -6,10 +6,9 @@ export default function AIChatPage() {
     <>
       <PageHeader
         title="AI Chat"
-        description="Ask merchandising questions and get instant rule-based answers grounded in the local fashion retail dataset."
+        description="Ask profile-aware merchandising questions and inspect the analytics behind every recommendation."
       />
       <AIChatExperience />
     </>
   );
 }
-

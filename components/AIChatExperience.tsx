@@ -3,6 +3,12 @@
 import { useState, type FormEvent } from "react";
 import { Icon } from "@/components/icons";
 import { generateChatResponse } from "@/lib/ai-insights";
+import {
+  buildChatSupportingData,
+  type ChatSupportingData,
+} from "@/lib/explainability";
+import { timeframeLabel } from "@/lib/timeframe";
+import { useAnalyticsData } from "@/lib/use-analytics-data";
 
 type ChatMessage = {
   id: number;
@@ -10,6 +16,7 @@ type ChatMessage = {
   content: string;
   source?: "openai" | "fallback";
   note?: string;
+  supportingData?: ChatSupportingData;
 };
 
 const suggestions = [
@@ -30,6 +37,7 @@ export function AIChatExperience() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { profile, records, sourceData, timeframe, isUploadedData } = useAnalyticsData();
 
   async function askQuestion(question: string) {
     const trimmed = question.trim();
@@ -43,26 +51,36 @@ export function AIChatExperience() {
     setInput("");
     setIsLoading(true);
 
-    let answer = generateChatResponse(trimmed);
+    let answer = generateChatResponse(trimmed, profile, records, timeframe);
     let source: ChatMessage["source"] = "fallback";
     let note: string | undefined;
+    let supportingData = buildChatSupportingData(trimmed, records);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: trimmed }),
+        body: JSON.stringify({
+          question: trimmed,
+          profile,
+          timeframe,
+          records: isUploadedData ? sourceData : undefined,
+        }),
       });
       const data = (await response.json()) as {
         answer?: unknown;
         source?: unknown;
         note?: unknown;
+        supportingData?: unknown;
       };
 
       if (response.ok && typeof data.answer === "string" && data.answer.trim()) {
         answer = data.answer;
         source = data.source === "openai" ? "openai" : "fallback";
         note = typeof data.note === "string" ? data.note : undefined;
+        if (data.supportingData && typeof data.supportingData === "object") {
+          supportingData = data.supportingData as ChatSupportingData;
+        }
       }
     } catch {
       // The local rules engine already provides a complete fallback response.
@@ -70,7 +88,14 @@ export function AIChatExperience() {
 
     setMessages((current) => [
       ...current,
-      { id: timestamp + 1, role: "assistant", content: answer, source, note },
+      {
+        id: timestamp + 1,
+        role: "assistant",
+        content: answer,
+        source,
+        note,
+        supportingData,
+      },
     ]);
     setIsLoading(false);
   }
@@ -135,6 +160,54 @@ export function AIChatExperience() {
                   <p className="mt-2 rounded-xl bg-[#fbf1e7] px-3 py-2 text-[11px] leading-5 text-[#8b654d]">
                     {message.note}
                   </p>
+                ) : null}
+                {message.role === "assistant" && message.supportingData ? (
+                  <details className="group mt-3 rounded-2xl border border-[#e8e2eb] bg-[#faf7fb]">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-[11px] font-bold text-[#665772]">
+                      View supporting data
+                      <span className="text-base leading-none transition group-open:rotate-45">+</span>
+                    </summary>
+                    <div className="border-t border-[#e8e2eb] p-3">
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        {[
+                          ["Top state", message.supportingData.topState],
+                          ["Top age group", message.supportingData.topAgeGroup],
+                          ["Gender", message.supportingData.gender],
+                        ].map(([label, value]) => (
+                          <div key={label} className="rounded-xl bg-white px-3 py-2">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#9a91a0]">{label}</p>
+                            <p className="mt-1 text-[11px] font-semibold text-[#554e5a]">{value}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 overflow-x-auto rounded-xl border border-[#ebe6ed]">
+                        <table className="min-w-[560px] w-full text-left text-[10px]">
+                          <thead className="bg-[#f1ecf4] text-[#786f7d]">
+                            <tr>
+                              {["Product", "Units sold", "Stock", "Return rate", "Trend score"].map((heading) => (
+                                <th key={heading} className="px-2.5 py-2 font-bold">{heading}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#eeeaf0] bg-white">
+                            {message.supportingData.products.map((product) => (
+                              <tr key={product.productName}>
+                                <td className="px-2.5 py-2 font-semibold text-[#514a57]">{product.productName}</td>
+                                <td className="px-2.5 py-2">{product.unitsSold}</td>
+                                <td className="px-2.5 py-2">{product.stockAvailable}</td>
+                                <td className="px-2.5 py-2">{product.returnRate.toFixed(1)}%</td>
+                                <td className="px-2.5 py-2">{product.trendScore}/100</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="mt-3 rounded-xl bg-[#eee8f5] px-3 py-2.5">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#806d98]">Suggested action</p>
+                        <p className="mt-1 text-[11px] leading-5 text-[#62566e]">{message.supportingData.suggestedAction}</p>
+                      </div>
+                    </div>
+                  </details>
                 ) : null}
               </div>
             </div>
@@ -217,6 +290,12 @@ export function AIChatExperience() {
           <p className="mt-2 text-[11px] leading-5 text-[#7f7784]">
             180 local orders, 15 products, ten Indian markets, customer cohorts, inventory,
             returns, and trend momentum.
+          </p>
+          <p className="mt-3 border-t border-white/70 pt-3 text-[10px] font-bold text-[#6f6080]">
+            Active profile: {profile.companyName}
+          </p>
+          <p className="mt-1 text-[10px] font-semibold text-[#7f708c]">
+            Analyzing: {timeframeLabel(timeframe)} · {records.length} records
           </p>
         </div>
       </aside>

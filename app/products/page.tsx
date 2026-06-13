@@ -1,10 +1,14 @@
+"use client";
+
+import { DataEmptyState } from "@/components/DataEmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { ProductsTable } from "@/components/ProductsTable";
-import { fashionRetailData } from "@/data/fashion-retail-data";
 import { productIntelligence } from "@/lib/intelligence";
+import { useAnalyticsData } from "@/lib/use-analytics-data";
 
 export default function ProductsPage() {
-  const products = productIntelligence(fashionRetailData);
+  const { records, timeframe, hasEnoughData } = useAnalyticsData();
+  const products = hasEnoughData ? productIntelligence(records) : [];
   const lowStock = products.filter((product) => product.risk === "Low Stock").length;
   const overstock = products.filter((product) => product.risk === "Overstock").length;
   const trending = products.filter((product) => product.risk === "Trending").length;
@@ -16,6 +20,10 @@ export default function ProductsPage() {
         description="Monitor SKU velocity, inventory cover, return exposure, and trend momentum across the assortment."
       />
 
+      {!hasEnoughData ? (
+        <DataEmptyState timeframe={timeframe} recordCount={records.length} />
+      ) : (
+        <>
       <section className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           { label: "Active SKUs", value: products.length, tone: "bg-[#eee8f6]" },
@@ -35,7 +43,8 @@ export default function ProductsPage() {
       </section>
 
       <ProductsTable products={products} />
+        </>
+      )}
     </>
   );
 }
-

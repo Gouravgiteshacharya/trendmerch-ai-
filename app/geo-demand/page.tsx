@@ -1,8 +1,11 @@
+"use client";
+
 import { ChartCard } from "@/components/ChartCard";
+import { DataEmptyState } from "@/components/DataEmptyState";
 import { MetricBars } from "@/components/MetricBars";
 import { PageHeader } from "@/components/PageHeader";
-import { fashionRetailData } from "@/data/fashion-retail-data";
 import { stateIntelligence } from "@/lib/intelligence";
+import { useAnalyticsData } from "@/lib/use-analytics-data";
 
 const currency = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -12,7 +15,8 @@ const currency = new Intl.NumberFormat("en-IN", {
 });
 
 export default function GeoDemandPage() {
-  const states = stateIntelligence(fashionRetailData);
+  const { records, timeframe, hasEnoughData } = useAnalyticsData();
+  const states = hasEnoughData ? stateIntelligence(records) : [];
   const topStates = states.slice(0, 3);
 
   return (
@@ -22,6 +26,10 @@ export default function GeoDemandPage() {
         description="Understand regional demand, customer mix, and the inventory moves most likely to capture revenue."
       />
 
+      {!hasEnoughData ? (
+        <DataEmptyState timeframe={timeframe} recordCount={records.length} />
+      ) : (
+        <>
       <section className="grid gap-4 sm:grid-cols-3">
         {topStates.map((state, index) => (
           <article
@@ -132,7 +140,8 @@ export default function GeoDemandPage() {
           </table>
         </div>
       </section>
+        </>
+      )}
     </>
   );
 }
-

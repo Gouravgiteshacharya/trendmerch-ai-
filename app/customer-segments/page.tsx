@@ -1,13 +1,16 @@
+"use client";
+
 import { ChartCard } from "@/components/ChartCard";
+import { DataEmptyState } from "@/components/DataEmptyState";
 import { MetricBars } from "@/components/MetricBars";
 import { PageHeader } from "@/components/PageHeader";
-import { fashionRetailData } from "@/data/fashion-retail-data";
 import { demandByGender } from "@/lib/analytics";
 import {
   categoryPreferenceByAge,
   segmentIntelligence,
   totalSegmentRevenue,
 } from "@/lib/intelligence";
+import { useAnalyticsData } from "@/lib/use-analytics-data";
 
 const currency = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -17,9 +20,10 @@ const currency = new Intl.NumberFormat("en-IN", {
 });
 
 export default function CustomerSegmentsPage() {
-  const segments = segmentIntelligence(fashionRetailData);
-  const genderDemand = demandByGender(fashionRetailData);
-  const preferences = categoryPreferenceByAge(fashionRetailData);
+  const { records, timeframe, hasEnoughData } = useAnalyticsData();
+  const segments = hasEnoughData ? segmentIntelligence(records) : [];
+  const genderDemand = hasEnoughData ? demandByGender(records) : [];
+  const preferences = hasEnoughData ? categoryPreferenceByAge(records) : [];
 
   return (
     <>
@@ -28,6 +32,10 @@ export default function CustomerSegmentsPage() {
         description="Translate age, gender, and category affinity into sharper assortment and campaign decisions."
       />
 
+      {!hasEnoughData ? (
+        <DataEmptyState timeframe={timeframe} recordCount={records.length} />
+      ) : (
+        <>
       <section className="grid gap-5 xl:grid-cols-2">
         <ChartCard
           title="Demand by age group"
@@ -137,7 +145,7 @@ export default function CustomerSegmentsPage() {
                   </td>
                   <td className="px-5 py-4 text-xs text-[#69626e]">{segment.topProduct}</td>
                   <td className="px-5 py-4 text-sm font-bold text-[#49434f]">
-                    {currency.format(totalSegmentRevenue(fashionRetailData, segment.label))}
+                    {currency.format(totalSegmentRevenue(records, segment.label))}
                   </td>
                   <td className="px-5 py-4 text-sm text-[#69626e]">{segment.units}</td>
                   <td className="max-w-xs px-5 py-4 text-xs leading-5 text-[#746d79]">
@@ -149,7 +157,8 @@ export default function CustomerSegmentsPage() {
           </table>
         </div>
       </section>
+        </>
+      )}
     </>
   );
 }
-
