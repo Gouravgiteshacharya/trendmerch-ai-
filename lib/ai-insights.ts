@@ -4,8 +4,10 @@ import {
   periodGrowth,
   returnRate,
   salesByCategory,
+  sizeWiseDemand,
   slowMovingProducts,
   stockoutRiskProducts,
+  topSellingProducts,
   totalRevenue,
   totalUnitsSold,
 } from "@/lib/analytics";
@@ -15,7 +17,7 @@ import {
   stateIntelligence,
   trendIntelligence,
 } from "@/lib/intelligence";
-import type { BusinessProfile } from "@/lib/business-profile";
+import { businessGoalGuidance, type BusinessProfile } from "@/lib/business-profile";
 import { defaultTimeframe, timeframeLabel, type Timeframe } from "@/lib/timeframe";
 
 export type WeeklyReportSection = {
@@ -53,6 +55,44 @@ function generalSummary(records: FashionRetailRecord[]) {
   return `Current merchandising snapshot: ${currency.format(revenue)} revenue from ${units.toLocaleString("en-IN")} units, with a ${returns.toFixed(1)}% return rate. ${topCategory.category} leads category revenue, ${topState.label} is the strongest demand market, and ${topTrend.productName} has the highest trend score at ${topTrend.score}/100.`;
 }
 
+function goalPriorityInsight(profile: BusinessProfile, records: FashionRetailRecord[]) {
+  const topProducts = topSellingProducts(records, 3);
+  const stockRisks = stockoutRiskProducts(records).slice(0, 3);
+  const returnRisks = highReturnProducts(records, 3);
+  const slowProducts = slowMovingProducts(records, 3);
+  const sizes = sizeWiseDemand(records).slice(0, 3);
+  const states = stateIntelligence(records).slice(0, 3);
+  const trends = trendIntelligence(records).slice(0, 3);
+  const segments = [...segmentIntelligence(records)].sort((a, b) => b.units - a.units);
+  const categories = salesByCategory(records).slice(0, 3);
+  const products = productIntelligence(records);
+  const premiumProducts = [...products]
+    .sort((a, b) => b.averagePrice - a.averagePrice || b.revenue - a.revenue)
+    .slice(0, 3);
+
+  switch (profile.businessGoal) {
+    case "Reduce returns":
+      return returnRisks.length > 0
+        ? `Review ${joinNames(returnRisks.map((product) => `${product.productName} (${product.returnRate.toFixed(1)}% returns)`))}; audit fit, size guidance, imagery, and quality before adding promotion.`
+        : `Returns are currently controlled; protect that position with fit guidance and quality checks, especially across the leading sizes ${joinNames(sizes.map((size) => size.label))}.`;
+    case "Clear dead stock":
+      return `Use controlled markdowns or bundles for ${joinNames(slowProducts.map((product) => `${product.productName} (${product.stockAvailable} in stock)`))}, starting with a 10-15% targeted offer.`;
+    case "Improve size availability":
+      return `Protect availability in ${joinNames(sizes.map((size) => `${size.label} (${size.units} units)`))} and use ${joinNames(stockRisks.map((product) => product.productName)) || "the fastest-selling products"} to identify immediate stock gaps.`;
+    case "Expand into new regions":
+      return `Prioritize regional tests in ${joinNames(states.map((state) => `${state.label} (${state.units} units)`))}; match each allocation to its leading category before expanding depth.`;
+    case "Launch a new collection":
+      return `Build the launch around ${joinNames(trends.map((trend) => `${trend.productName} (${trend.trendKeyword})`))} and target the ${segments[0]?.label ?? "leading"} customer segment first.`;
+    case "Improve profit margin":
+      return `Control blanket discounting, reduce returns, and protect premium revenue contributors ${joinNames(premiumProducts.map((product) => `${product.productName} (${currency.format(product.averagePrice)} average price)`))}. Product cost data is needed for true margin ranking.`;
+    case "Increase repeat purchases":
+      return `Build retention offers around the ${segments[0]?.label ?? "leading"} segment and repeatable category favorites ${joinNames(categories.map((category) => category.category))}.`;
+    case "Increase revenue":
+    default:
+      return `Protect availability for ${joinNames(topProducts.map((product) => `${product.productName} (${product.unitsSold} units)`))} and replenish ${joinNames(stockRisks.map((product) => product.productName)) || "fast sellers"} before adding depth to weaker products.`;
+  }
+}
+
 export function generateChatResponse(
   question: string,
   profile?: BusinessProfile | null,
@@ -60,13 +100,24 @@ export function generateChatResponse(
   timeframe: Timeframe = defaultTimeframe,
 ) {
   const normalized = question.trim().toLowerCase();
-  const personalize = (response: string) =>
-    `${profile?.companyName ? `For ${profile.companyName}, ` : ""}analyzing ${timeframeLabel(timeframe)}: ${response}`;
+  const personalize = (response: string) => {
+    const workspaceContext = profile?.companyName
+      ? `For ${profile.companyName}${profile.role ? ` (${profile.role})` : ""}, `
+      : "";
+    const opening = `${workspaceContext}analyzing ${timeframeLabel(timeframe)}: ${response}`;
+    return profile
+      ? `${opening} Monthly-goal priority (${profile.businessGoal}): ${goalPriorityInsight(profile, records)}`
+      : opening;
+  };
 
   if (records.length < 3) {
     return personalize(
       `there are only ${records.length} usable records. Switch to Last 30 Days, Last 1 Year, or All Time for a reliable recommendation.`,
     );
+  }
+
+  if (/(goal|objective|priority|this month)/.test(normalized) && profile) {
+    return personalize(businessGoalGuidance(profile.businessGoal));
   }
 
   if (/(restock|stock|inventory)/.test(normalized)) {
@@ -157,8 +208,8 @@ export function generateWeeklyReport(
     ].map((title) => ({ title, summary, bullets: ["Broaden the selected timeframe to continue."] }));
     return {
       title: profile?.companyName
-        ? `${profile.companyName} Weekly Merchandising Report`
-        : "Weekly Merchandising Intelligence Report",
+        ? `${profile.companyName} Merchandising Report`
+        : "Merchandising Intelligence Report",
       period,
       generatedAt: "Insufficient data",
       sections,
@@ -182,15 +233,19 @@ export function generateWeeklyReport(
   const leadSegment = [...segments].sort((a, b) => b.units - a.units)[0];
   const trends = trendIntelligence(records);
   const markdowns = slowMovingProducts(records, 3);
+  const goalInsight = profile ? goalPriorityInsight(profile, records) : null;
 
   const sections: WeeklyReportSection[] = [
     {
       title: "Executive Summary",
-      summary: `${profile?.companyName ? `${profile.companyName}'s simulation generated` : "The current dataset generated"} ${currency.format(revenue)} revenue from ${units.toLocaleString("en-IN")} units.`,
+      summary: `${profile?.companyName ? `${profile.companyName}'s ${profile.role ? `${profile.role.toLowerCase()} workspace` : "simulation"} generated` : "The current dataset generated"} ${currency.format(revenue)} revenue from ${units.toLocaleString("en-IN")} units.`,
       bullets: [
         `Revenue momentum is ${signedPercent(revenueGrowth)} versus the prior 30-day period.`,
         `${inventoryRisks.length} products require stock attention and ${overstock.length} products are overstocked.`,
         `${states[0].label} is the strongest market, while ${trends[0].productName} leads trend momentum.`,
+        ...(profile
+          ? [`This month’s goal is ${profile.businessGoal}: ${businessGoalGuidance(profile.businessGoal)}`]
+          : []),
       ],
     },
     {
@@ -251,8 +306,11 @@ export function generateWeeklyReport(
     },
     {
       title: "Recommended Actions",
-      summary: "Focus the team on inventory protection, regional allocation, and disciplined markdowns.",
+      summary: profile
+        ? `Prioritize the monthly goal, ${profile.businessGoal}, alongside inventory protection and disciplined allocation.`
+        : "Focus the team on inventory protection, regional allocation, and disciplined markdowns.",
       bullets: [
+        ...(goalInsight ? [`Monthly goal action: ${goalInsight}`] : []),
         inventoryRisks[0]
           ? `Replenish ${inventoryRisks[0].productName} first and route depth toward ${states[0].label}.`
           : "Maintain current replenishment levels.",
@@ -264,8 +322,10 @@ export function generateWeeklyReport(
   ];
 
   const copyText = [
-    `TRENDMERCH AI - WEEKLY MERCHANDISING REPORT${profile?.companyName ? ` - ${profile.companyName}` : ""}`,
+    `TRENDMERCH AI - MERCHANDISING REPORT${profile?.companyName ? ` - ${profile.companyName}` : ""}`,
     `Reporting period: ${timeframeLabel(timeframe)}`,
+    ...(profile?.role ? [`Workspace role: ${profile.role}`] : []),
+    ...(profile ? [`Business goal for this month: ${profile.businessGoal}`] : []),
     "",
     ...sections.flatMap((section) => [
       section.title.toUpperCase(),
@@ -277,8 +337,8 @@ export function generateWeeklyReport(
 
   return {
     title: profile?.companyName
-      ? `${profile.companyName} Weekly Merchandising Report`
-      : "Weekly Merchandising Intelligence Report",
+      ? `${profile.companyName} Merchandising Report`
+      : "Merchandising Intelligence Report",
     period,
     generatedAt: "Week 24, 2026",
     sections,

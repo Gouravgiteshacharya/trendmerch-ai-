@@ -5,7 +5,7 @@ export default function WeeklyReportPage() {
   return (
     <>
       <PageHeader
-        title="Weekly Report"
+        title="Merchandising Report"
         description="Generate a profile-aware leadership brief with expandable revenue, inventory, market, customer, and trend evidence."
       />
       <WeeklyReportExperience />

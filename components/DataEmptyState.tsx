@@ -19,13 +19,13 @@ export function DataEmptyState({
   return (
     <section className="soft-card subtle-grid flex min-h-[360px] items-center justify-center rounded-3xl p-8 text-center">
       <div className="max-w-lg">
-        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#eee8f5] text-[#745f91]">
+        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#e4e8da] text-[#596149]">
           <Icon name="report" className="size-6" />
         </span>
-        <h2 className="mt-5 text-xl font-bold text-[#403a47]">
+        <h2 className="editorial-serif mt-5 text-xl font-semibold text-[#40362c]">
           {recordCount === 0 ? "No data in this timeframe" : "Not enough data for a reliable view"}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-[#817a86]">
+        <p className="mt-2 text-sm leading-6 text-[#817467]">
           {timeframeLabel(timeframe)} contains {recordCount} usable{" "}
           {recordCount === 1 ? "record" : "records"}. Choose a broader period to generate meaningful
           merchandising analytics.
@@ -36,7 +36,7 @@ export function DataEmptyState({
               key={option.value}
               type="button"
               onClick={() => saveTimeframe(option.value)}
-              className="rounded-xl border border-[#ddd4e4] bg-white px-3 py-2 text-xs font-bold text-[#665872] transition hover:bg-[#f6f1f8]"
+              className="rounded-xl border border-[#d2c3ac] bg-[#faf6ee] px-3 py-2 text-xs font-bold text-[#5c5146] transition hover:bg-[#eee5d7]"
             >
               Switch to {option.label}
             </button>

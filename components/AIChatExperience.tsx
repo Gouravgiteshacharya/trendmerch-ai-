@@ -108,18 +108,18 @@ export function AIChatExperience() {
   return (
     <div className="grid min-h-[680px] gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
       <section className="soft-card flex min-h-[640px] flex-col overflow-hidden rounded-3xl">
-        <div className="flex items-center gap-3 border-b border-[#eeeaf0] p-5">
-          <span className="grid size-11 place-items-center rounded-2xl bg-[#373142] text-[#ddcdec] shadow-[0_10px_24px_rgba(55,49,66,0.2)]">
+        <div className="flex items-center gap-3 border-b border-[#d9ccb8] bg-[#f5efe5]/70 p-5">
+          <span className="grid size-11 place-items-center rounded-full border border-[#6e765c] bg-[#40483a] text-[#ddc99d] shadow-[0_10px_24px_rgba(55,57,43,0.18)]">
             <Icon name="sparkles" className="size-5" />
           </span>
           <div>
-            <h2 className="text-sm font-bold text-[#403a47]">Mira</h2>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[#8f8894]">
-              <span className="size-1.5 rounded-full bg-[#6fa087]" />
-              Local intelligence online
+            <h2 className="editorial-serif text-base font-semibold text-[#40362c]">Mira, Atelier Assistant</h2>
+            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[#887b6e]">
+              <span className="size-1.5 rounded-full bg-[#687153]" />
+              Merchandising intelligence online
             </p>
           </div>
-          <span className="ml-auto rounded-full bg-[#eee8f5] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-[#735f90]">
+          <span className="ml-auto rounded-full border border-[#cfc2a7] bg-[#eee8dc] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-[#697052]">
             OpenAI + fallback
           </span>
         </div>
@@ -131,15 +131,15 @@ export function AIChatExperience() {
               className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {message.role === "assistant" ? (
-                <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-[#eee8f5] text-[#725e8f]">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#e4e8da] text-[#596149]">
                   <Icon name="sparkles" className="size-4" />
                 </span>
               ) : null}
               <div
                 className={`max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 sm:max-w-[76%] ${
                   message.role === "user"
-                    ? "rounded-br-md bg-[#3a3447] text-white"
-                    : "rounded-bl-md border border-[#eeeaf0] bg-white/70 text-[#5f5865]"
+                    ? "rounded-br-md bg-[#3d352d] text-[#fff8ec]"
+                    : "rounded-bl-md border border-[#ddd0bd] bg-[#f8f3ea] text-[#5e5449]"
                 }`}
               >
                 {message.content}
@@ -147,8 +147,8 @@ export function AIChatExperience() {
                   <span
                     className={`mt-3 block w-fit rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.08em] ${
                       message.source === "openai"
-                        ? "bg-[#e4f0e9] text-[#4f7765]"
-                        : "bg-[#eee8f5] text-[#705e8c]"
+                        ? "border border-[#879174]/40 bg-[#e4e8da] text-[#596149]"
+                        : "border border-[#b8a47c]/40 bg-[#eee5d5] text-[#806942]"
                     }`}
                   >
                     {message.source === "openai"
@@ -157,42 +157,42 @@ export function AIChatExperience() {
                   </span>
                 ) : null}
                 {message.role === "assistant" && message.note ? (
-                  <p className="mt-2 rounded-xl bg-[#fbf1e7] px-3 py-2 text-[11px] leading-5 text-[#8b654d]">
+                  <p className="mt-2 rounded-xl border border-[#dfc7ab] bg-[#f4e8d8] px-3 py-2 text-[11px] leading-5 text-[#815f47]">
                     {message.note}
                   </p>
                 ) : null}
                 {message.role === "assistant" && message.supportingData ? (
-                  <details className="group mt-3 rounded-2xl border border-[#e8e2eb] bg-[#faf7fb]">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-[11px] font-bold text-[#665772]">
+                  <details className="group mt-3 rounded-2xl border border-[#d8cab5] bg-[#f2eadf]">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-[11px] font-bold text-[#635846]">
                       View supporting data
                       <span className="text-base leading-none transition group-open:rotate-45">+</span>
                     </summary>
-                    <div className="border-t border-[#e8e2eb] p-3">
+                    <div className="border-t border-[#d8cab5] p-3">
                       <div className="grid gap-2 sm:grid-cols-3">
                         {[
                           ["Top state", message.supportingData.topState],
                           ["Top age group", message.supportingData.topAgeGroup],
                           ["Gender", message.supportingData.gender],
                         ].map(([label, value]) => (
-                          <div key={label} className="rounded-xl bg-white px-3 py-2">
-                            <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#9a91a0]">{label}</p>
-                            <p className="mt-1 text-[11px] font-semibold text-[#554e5a]">{value}</p>
+                          <div key={label} className="rounded-xl border border-[#e0d5c3] bg-[#faf6ee] px-3 py-2">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#9a8265]">{label}</p>
+                            <p className="mt-1 text-[11px] font-semibold text-[#554b40]">{value}</p>
                           </div>
                         ))}
                       </div>
-                      <div className="mt-3 overflow-x-auto rounded-xl border border-[#ebe6ed]">
+                      <div className="mt-3 overflow-x-auto rounded-xl border border-[#d8cab5]">
                         <table className="min-w-[560px] w-full text-left text-[10px]">
-                          <thead className="bg-[#f1ecf4] text-[#786f7d]">
+                          <thead className="bg-[#e9dfd0] text-[#76695c]">
                             <tr>
                               {["Product", "Units sold", "Stock", "Return rate", "Trend score"].map((heading) => (
                                 <th key={heading} className="px-2.5 py-2 font-bold">{heading}</th>
                               ))}
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-[#eeeaf0] bg-white">
+                          <tbody className="divide-y divide-[#e3d8c7] bg-[#faf6ee]">
                             {message.supportingData.products.map((product) => (
                               <tr key={product.productName}>
-                                <td className="px-2.5 py-2 font-semibold text-[#514a57]">{product.productName}</td>
+                                <td className="px-2.5 py-2 font-semibold text-[#51473d]">{product.productName}</td>
                                 <td className="px-2.5 py-2">{product.unitsSold}</td>
                                 <td className="px-2.5 py-2">{product.stockAvailable}</td>
                                 <td className="px-2.5 py-2">{product.returnRate.toFixed(1)}%</td>
@@ -202,9 +202,9 @@ export function AIChatExperience() {
                           </tbody>
                         </table>
                       </div>
-                      <div className="mt-3 rounded-xl bg-[#eee8f5] px-3 py-2.5">
-                        <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#806d98]">Suggested action</p>
-                        <p className="mt-1 text-[11px] leading-5 text-[#62566e]">{message.supportingData.suggestedAction}</p>
+                      <div className="mt-3 rounded-xl border border-[#adb493]/45 bg-[#e5e8dc] px-3 py-2.5">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#697052]">Suggested action</p>
+                        <p className="mt-1 text-[11px] leading-5 text-[#596149]">{message.supportingData.suggestedAction}</p>
                       </div>
                     </div>
                   </details>
@@ -214,18 +214,18 @@ export function AIChatExperience() {
           ))}
           {isLoading ? (
             <div className="flex gap-3">
-              <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-[#eee8f5] text-[#725e8f]">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#e4e8da] text-[#596149]">
                 <Icon name="sparkles" className="size-4" />
               </span>
-              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#eeeaf0] bg-white/70 px-4 py-4">
+              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#ddd0bd] bg-[#f8f3ea] px-4 py-4">
                 {[0, 1, 2].map((dot) => (
                   <span
                     key={dot}
-                    className="size-1.5 animate-pulse rounded-full bg-[#8d7ba4]"
+                    className="size-1.5 animate-pulse rounded-full bg-[#7b805f]"
                     style={{ animationDelay: `${dot * 140}ms` }}
                   />
                 ))}
-                <span className="ml-2 text-xs font-semibold text-[#8a8290]">
+                <span className="ml-2 text-xs font-semibold text-[#817467]">
                   Analyzing merchandising signals
                 </span>
               </div>
@@ -233,8 +233,8 @@ export function AIChatExperience() {
           ) : null}
         </div>
 
-        <form onSubmit={handleSubmit} className="border-t border-[#eeeaf0] p-4 sm:p-5">
-          <div className="flex items-end gap-3 rounded-2xl border border-[#e7e2e9] bg-white/75 p-2 pl-4 focus-within:border-[#b9a8cf]">
+        <form onSubmit={handleSubmit} className="border-t border-[#d9ccb8] bg-[#f5efe5]/55 p-4 sm:p-5">
+          <div className="flex items-end gap-3 rounded-2xl border border-[#d2c3ac] bg-[#fcf8f1] p-2 pl-4 focus-within:border-[#8d8f6c] focus-within:ring-4 focus-within:ring-[#e7e5d7]">
             <textarea
               value={input}
               onChange={(event) => setInput(event.target.value)}
@@ -247,28 +247,28 @@ export function AIChatExperience() {
               }}
               rows={1}
               placeholder="Ask about inventory, trends, markets, segments, or returns..."
-              className="max-h-28 min-h-10 flex-1 resize-none bg-transparent py-2 text-sm text-[#49424f] outline-none placeholder:text-[#aaa3ae]"
+              className="max-h-28 min-h-10 flex-1 resize-none bg-transparent py-2 text-sm text-[#4b4137] outline-none placeholder:text-[#9b8f82]"
             />
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
               aria-label="Send message"
-              className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#3a3447] text-white transition hover:bg-[#4a4259] disabled:cursor-not-allowed disabled:opacity-40"
+              className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#40483a] text-[#fff8ec] transition hover:bg-[#505947] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Icon name="arrow" className="size-4" />
             </button>
           </div>
-          <p className="mt-2 text-center text-[10px] text-[#aaa3ae]">
+          <p className="mt-2 text-center text-[10px] text-[#95897c]">
             OpenAI runs server-side; local analytics answer automatically if it is unavailable.
           </p>
         </form>
       </section>
 
       <aside className="soft-card h-fit rounded-3xl p-5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a86b2]">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a7d4f]">
           Suggested questions
         </p>
-        <h2 className="mt-2 text-lg font-bold tracking-[-0.02em] text-[#3d3745]">
+        <h2 className="editorial-serif mt-2 text-xl font-semibold tracking-[-0.02em] text-[#40362c]">
           Start with a decision.
         </h2>
         <div className="mt-5 space-y-2.5">
@@ -278,23 +278,29 @@ export function AIChatExperience() {
               type="button"
               onClick={() => askQuestion(question)}
               disabled={isLoading}
-              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[#eeeaf0] bg-white/65 px-4 py-3 text-left text-xs font-semibold leading-5 text-[#68616e] transition hover:border-[#d7cce2] hover:bg-[#f7f3f9] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[#d8cab5] bg-[#f8f3ea] px-4 py-3 text-left text-xs font-semibold leading-5 text-[#675d52] transition hover:border-[#ad9979] hover:bg-[#eee5d7] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {question}
-              <Icon name="arrow" className="size-3.5 shrink-0 text-[#8d7ba4]" />
+              <Icon name="arrow" className="size-3.5 shrink-0 text-[#7b805f]" />
             </button>
           ))}
         </div>
-        <div className="mt-5 rounded-2xl bg-gradient-to-br from-[#eee8f5] to-[#f8e9e5] p-4">
-          <p className="text-xs font-bold text-[#4a4352]">What Mira can analyze</p>
-          <p className="mt-2 text-[11px] leading-5 text-[#7f7784]">
+        <div className="mt-5 rounded-2xl border border-[#d5c6af] bg-gradient-to-br from-[#e7e5d7] to-[#f0dfd3] p-4">
+          <p className="text-xs font-bold text-[#4b4137]">What Mira can analyze</p>
+          <p className="mt-2 text-[11px] leading-5 text-[#786d60]">
             180 local orders, 15 products, ten Indian markets, customer cohorts, inventory,
             returns, and trend momentum.
           </p>
-          <p className="mt-3 border-t border-white/70 pt-3 text-[10px] font-bold text-[#6f6080]">
+          <p className="mt-3 border-t border-[#d6c7b0] pt-3 text-[10px] font-bold text-[#5f684e]">
             Active profile: {profile.companyName}
           </p>
-          <p className="mt-1 text-[10px] font-semibold text-[#7f708c]">
+          <p className="mt-1 text-[10px] font-semibold text-[#76695c]">
+            Role: {profile.role}
+          </p>
+          <p className="mt-1 text-[10px] font-semibold text-[#76695c]">
+            Monthly goal: {profile.businessGoal}
+          </p>
+          <p className="mt-1 text-[10px] font-semibold text-[#76695c]">
             Analyzing: {timeframeLabel(timeframe)} · {records.length} records
           </p>
         </div>

@@ -56,21 +56,21 @@ const inputs = [
     title: "Upload CSV",
     text: "Bring sales, inventory, returns, customer, product, and regional data.",
     button: "Upload Data",
-    href: "/business-setup?mode=csv",
+    href: "/onboarding?next=/business-setup?mode=csv",
     icon: Upload,
   },
   {
     title: "Fill Manually",
     text: "Enter business numbers like revenue, AOV, returns, regions, and product categories.",
     button: "Fill Profile",
-    href: "/business-setup?mode=manual",
+    href: "/onboarding?next=/business-setup?mode=manual",
     icon: PenLine,
   },
   {
     title: "Use Guided Dropdowns",
     text: "Choose preset values to simulate a real fashion brand instantly.",
     button: "Start Demo",
-    href: "/business-setup?mode=demo",
+    href: "/onboarding?next=/business-setup?mode=demo",
     icon: FileInput,
   },
 ];
@@ -137,11 +137,11 @@ export default function LandingPage() {
             <a href="#features" className="transition hover:text-[#2f271f]">Features</a>
             <a href="#data-input" className="transition hover:text-[#2f271f]">Data Input</a>
             <a href="#explainability" className="transition hover:text-[#2f271f]">Explainability</a>
-            <Link href="/dashboard" className="transition hover:text-[#2f271f]">Dashboard</Link>
+            <Link href="/onboarding?next=/dashboard" className="transition hover:text-[#2f271f]">Dashboard</Link>
           </nav>
 
           <Link
-            href="/business-setup?mode=demo"
+            href="/onboarding?next=/business-setup?mode=demo"
             className="inline-flex items-center gap-2 rounded-full bg-[#3c3329] px-4 py-2.5 text-xs font-bold text-[#fbf7ef] transition hover:bg-[#514437]"
           >
             Start Demo <ArrowRight className="size-3.5" />
@@ -168,19 +168,19 @@ export default function LandingPage() {
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
-                  href="/business-setup"
+                  href="/onboarding?next=/business-setup"
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-[#3b3127] px-5 py-3.5 text-sm font-bold text-[#fffaf0] shadow-[0_14px_35px_rgba(59,49,39,0.18)] transition hover:-translate-y-0.5"
                 >
                   Start with Guided Setup <ArrowRight className="size-4" />
                 </Link>
                 <Link
-                  href="/dashboard"
+                  href="/onboarding?next=/dashboard"
                   className="inline-flex items-center justify-center rounded-full border border-[#a7967e] bg-[#f8f3e9]/70 px-5 py-3.5 text-sm font-bold text-[#4b3e30] transition hover:bg-[#ebe1d0]"
                 >
                   Explore Demo Dashboard
                 </Link>
                 <Link
-                  href="/business-setup?mode=csv"
+                  href="/onboarding?next=/business-setup?mode=csv"
                   className="inline-flex items-center justify-center gap-2 px-3 py-3.5 text-sm font-bold text-[#6c5a45] transition hover:text-[#342a21]"
                 >
                   <Upload className="size-4" /> Upload Brand Data
@@ -292,16 +292,14 @@ export default function LandingPage() {
 
         <section id="data-input" className="scroll-mt-20 border-b border-[#cfc1aa] px-5 py-24 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-[1360px]">
-            <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-end">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#827054]">
-                  Flexible by design
-                </p>
-                <h2 className="editorial-serif mt-5 text-4xl tracking-[-0.035em] sm:text-5xl">
-                  Start with the data you have.
-                </h2>
-              </div>
-              <p className="max-w-2xl text-base leading-7 text-[#766755]">
+            <div className="max-w-3xl">
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#827054]">
+                Flexible by design
+              </p>
+              <h2 className="editorial-serif mt-5 text-4xl tracking-[-0.035em] sm:text-5xl">
+                Start with the data you have.
+              </h2>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-[#766755]">
                 TrendMerch AI works with uploaded files, manual business inputs, or guided demo
                 values.
               </p>
@@ -441,13 +439,13 @@ export default function LandingPage() {
             </h2>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
-                href="/business-setup"
+                href="/onboarding?next=/business-setup"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f4ead8] px-5 py-3.5 text-sm font-bold text-[#3b3127]"
               >
                 Start Guided Setup <ArrowRight className="size-4" />
               </Link>
               <Link
-                href="/dashboard"
+                href="/onboarding?next=/dashboard"
                 className="inline-flex items-center justify-center rounded-full border border-[#c2b294]/60 px-5 py-3.5 text-sm font-bold"
               >
                 Open Dashboard

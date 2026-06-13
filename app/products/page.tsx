@@ -17,7 +17,7 @@ export default function ProductsPage() {
   return (
     <>
       <PageHeader
-        title="Products"
+        title="Collection Intelligence"
         description="Monitor SKU velocity, inventory cover, return exposure, and trend momentum across the assortment."
       />
 
@@ -29,16 +29,16 @@ export default function ProductsPage() {
         <>
       <section className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Active SKUs", value: products.length, tone: "bg-[#eee8f6]" },
-          { label: "Low stock", value: lowStock, tone: "bg-[#f8e7e1]" },
-          { label: "Overstock", value: overstock, tone: "bg-[#e6eef7]" },
-          { label: "Trending", value: trending, tone: "bg-[#e4f0e9]" },
+          { label: "Active SKUs", value: products.length, tone: "border-t-[#aa8b58]" },
+          { label: "Low stock", value: lowStock, tone: "border-t-[#b67858]" },
+          { label: "Overstock", value: overstock, tone: "border-t-[#887668]" },
+          { label: "Trending", value: trending, tone: "border-t-[#687153]" },
         ].map((item) => (
-          <article key={item.label} className={`rounded-3xl p-5 ${item.tone}`}>
-            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#817a87]">
+          <article key={item.label} className={`rounded-3xl border border-[#d6c7b0] border-t-[3px] bg-[#faf6ee] p-5 shadow-[0_14px_32px_rgba(70,55,38,0.055)] ${item.tone}`}>
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#817467]">
               {item.label}
             </p>
-            <p className="mt-4 text-3xl font-bold tracking-[-0.04em] text-[#342f40]">
+            <p className="editorial-serif mt-4 text-3xl font-semibold tracking-[-0.04em] text-[#3b3127]">
               {item.value}
             </p>
           </article>

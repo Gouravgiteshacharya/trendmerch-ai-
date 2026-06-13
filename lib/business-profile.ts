@@ -3,6 +3,7 @@ export type BusinessDataSource = "demo" | "csv" | "manual";
 export type BusinessProfile = {
   source: BusinessDataSource;
   companyName: string;
+  role: string;
   brandType: string;
   primaryCategory: string;
   monthlyRevenueRange: string;
@@ -14,6 +15,7 @@ export type BusinessProfile = {
   biggestBusinessChallenge: string;
   returnRateRange: string;
   inventoryProblem: string;
+  businessGoal: string;
   uploadedRowCount: number;
   updatedAt: string;
 };
@@ -44,6 +46,15 @@ export const brandTypeOptions = [
   "Marketplace Seller",
   "Offline Retailer",
   "Instagram Store",
+  "Student Demo",
+];
+
+export const roleOptions = [
+  "Founder",
+  "Merchandiser",
+  "Brand Manager",
+  "Student / Demo User",
+  "Operations Team",
 ];
 
 export const categoryOptions = [
@@ -67,14 +78,43 @@ export const averageOrderValueOptions = ["₹499", "₹999", "₹1,499", "₹2,4
 export const ageGroupOptions = ["18–24", "25–34", "35–44", "45+"];
 export const genderOptions = ["Women", "Men", "All"];
 export const regionOptions = [
-  "Maharashtra",
+  "Entire India",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
   "Karnataka",
-  "Delhi",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
   "Odisha",
-  "West Bengal",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
   "Tamil Nadu",
   "Telangana",
-  "Gujarat",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
 ];
 export const challengeOptions = [
   "Stockouts",
@@ -91,10 +131,21 @@ export const inventoryProblemOptions = [
   "Size imbalance",
   "Regional mismatch",
 ];
+export const businessGoalOptions = [
+  "Increase revenue",
+  "Reduce returns",
+  "Clear dead stock",
+  "Improve size availability",
+  "Expand into new regions",
+  "Launch a new collection",
+  "Improve profit margin",
+  "Increase repeat purchases",
+];
 
 export const defaultBusinessProfile: BusinessProfile = {
   source: "demo",
   companyName: "Demo Fashion Co.",
+  role: roleOptions[3],
   brandType: brandTypeOptions[0],
   primaryCategory: categoryOptions[0],
   monthlyRevenueRange: revenueRangeOptions[2],
@@ -106,6 +157,7 @@ export const defaultBusinessProfile: BusinessProfile = {
   biggestBusinessChallenge: challengeOptions[0],
   returnRateRange: returnRateOptions[1],
   inventoryProblem: inventoryProblemOptions[0],
+  businessGoal: businessGoalOptions[0],
   uploadedRowCount: 0,
   updatedAt: "",
 };
@@ -119,7 +171,7 @@ const stringList = (value: unknown, fallback: string[] = []) =>
         .filter((item): item is string => typeof item === "string")
         .map((item) => item.trim().slice(0, 100))
         .filter(Boolean)
-        .slice(0, 12)
+        .slice(0, 40)
     : fallback;
 
 export function normalizeBusinessProfile(value: unknown): BusinessProfile | null {
@@ -133,6 +185,7 @@ export function normalizeBusinessProfile(value: unknown): BusinessProfile | null
   return {
     source,
     companyName: text(candidate.companyName, defaultBusinessProfile.companyName),
+    role: text(candidate.role, defaultBusinessProfile.role),
     brandType: text(candidate.brandType, defaultBusinessProfile.brandType),
     primaryCategory: text(candidate.primaryCategory, defaultBusinessProfile.primaryCategory),
     monthlyRevenueRange: text(
@@ -153,6 +206,7 @@ export function normalizeBusinessProfile(value: unknown): BusinessProfile | null
     ),
     returnRateRange: text(candidate.returnRateRange, defaultBusinessProfile.returnRateRange),
     inventoryProblem: text(candidate.inventoryProblem, defaultBusinessProfile.inventoryProblem),
+    businessGoal: text(candidate.businessGoal, defaultBusinessProfile.businessGoal),
     uploadedRowCount:
       typeof candidate.uploadedRowCount === "number" && Number.isFinite(candidate.uploadedRowCount)
         ? Math.max(0, Math.floor(candidate.uploadedRowCount))
@@ -189,7 +243,8 @@ export function dataSourceLabel(source: BusinessDataSource) {
 export function businessProfileContext(profile: BusinessProfile | null) {
   if (!profile) return "Business profile: not configured; use the demo dataset context.";
   return [
-    `Company: ${profile.companyName || "Unnamed business"}`,
+    `Workspace: ${profile.companyName || "Unnamed business"}`,
+    `Role: ${profile.role || "Not provided"}`,
     `Data source: ${dataSourceLabel(profile.source)}`,
     `Brand type: ${profile.brandType || "Not provided"}`,
     `Primary category: ${profile.primaryCategory || "Not provided"}`,
@@ -201,8 +256,33 @@ export function businessProfileContext(profile: BusinessProfile | null) {
     `Biggest challenge: ${profile.biggestBusinessChallenge || "Not provided"}`,
     `Return-rate range: ${profile.returnRateRange || "Not provided"}`,
     `Inventory problem: ${profile.inventoryProblem || "Not provided"}`,
+    `Business goal for this month: ${profile.businessGoal || "Not provided"}`,
+    `Goal priority guidance: ${businessGoalGuidance(profile.businessGoal)}`,
     profile.source === "csv" ? `Uploaded rows: ${profile.uploadedRowCount}` : "",
   ]
     .filter(Boolean)
     .join("; ");
+}
+
+export function businessGoalGuidance(goal: string) {
+  const guidance: Record<string, string> = {
+    "Increase revenue":
+      "Prioritize restocking proven bestsellers and protecting availability in the highest-demand markets.",
+    "Reduce returns":
+      "Prioritize high-return products, size and fit issues, product quality, imagery, and expectation-setting.",
+    "Clear dead stock":
+      "Prioritize controlled markdowns, bundles, targeted offers, and slow-moving inventory reduction.",
+    "Improve size availability":
+      "Prioritize size-wise demand, stock gaps, replenishment depth, and correcting the size mix.",
+    "Expand into new regions":
+      "Prioritize state-wise demand, regional whitespace, and inventory allocation opportunities.",
+    "Launch a new collection":
+      "Prioritize trend intelligence, customer segments, category affinity, and launch timing.",
+    "Improve profit margin":
+      "Prioritize discount control, premium revenue contributors, return reduction, and disciplined inventory buys.",
+    "Increase repeat purchases":
+      "Prioritize loyal customer segments, best-performing categories, retention offers, and replenishable favorites.",
+  };
+
+  return guidance[goal] ?? guidance[defaultBusinessProfile.businessGoal];
 }

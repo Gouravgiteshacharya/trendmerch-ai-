@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { fashionRetailData } from "@/data/fashion-retail-data";
 import { generateWeeklyReport } from "@/lib/ai-insights";
 import { buildBusinessContext } from "@/lib/business-context";
-import { normalizeBusinessProfile } from "@/lib/business-profile";
+import { businessGoalGuidance, normalizeBusinessProfile } from "@/lib/business-profile";
 import { normalizeFashionRecords } from "@/lib/data-source";
 import { buildReportEvidence } from "@/lib/explainability";
 import { filterDataByTimeframe, normalizeTimeframe, timeframeLabel } from "@/lib/timeframe";
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   if (body.type !== "weekly") {
     console.log("Using fallback response");
     return Response.json(
-      { report: "Only weekly reports are currently supported.", source: "fallback" },
+      { report: "Only merchandising reports are currently supported.", source: "fallback" },
       { status: 400 },
     );
   }
@@ -84,9 +84,8 @@ export async function POST(request: Request) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const response = await openai.responses.create({
       model: process.env.OPENAI_MODEL ?? "gpt-5-mini",
-      instructions:
-        "You are TrendMerch AI, a senior fashion merchandising analyst preparing a weekly leadership brief. Use only the supplied business context, preserve numerical accuracy, prioritize decisions, and do not invent facts. Write clear professional merchandising language.",
-      input: `${buildBusinessContext(profile, records, timeframe)}\n\nREPORT INSTRUCTIONS\nCreate the merchandising report for the selected timeframe: ${timeframeLabel(timeframe)}. Tailor recommendations to the supplied company profile when relevant.\n${reportFormat}`,
+      instructions: `You are TrendMerch AI, a senior fashion merchandising analyst preparing a weekly leadership brief. Use only the supplied business context, preserve numerical accuracy, prioritize decisions, and do not invent facts. Write clear professional merchandising language.${profile ? ` The primary business goal this month is "${profile.businessGoal}". ${businessGoalGuidance(profile.businessGoal)}` : ""}`,
+      input: `${buildBusinessContext(profile, records, timeframe)}\n\nREPORT INSTRUCTIONS\nCreate the merchandising report for the selected timeframe: ${timeframeLabel(timeframe)}. Tailor recommendations to the supplied company profile and explicitly connect recommended actions to the monthly business goal when relevant.\n${reportFormat}`,
     });
 
     const report = response.output_text.trim();

@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { fashionRetailData } from "@/data/fashion-retail-data";
 import { generateChatResponse } from "@/lib/ai-insights";
 import { buildBusinessContext } from "@/lib/business-context";
-import { normalizeBusinessProfile } from "@/lib/business-profile";
+import { businessGoalGuidance, normalizeBusinessProfile } from "@/lib/business-profile";
 import { normalizeFashionRecords } from "@/lib/data-source";
 import { buildChatSupportingData } from "@/lib/explainability";
 import { filterDataByTimeframe, normalizeTimeframe } from "@/lib/timeframe";
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const response = await openai.responses.create({
       model: process.env.OPENAI_MODEL ?? "gpt-5-mini",
-      instructions: `You are TrendMerch AI, a senior fashion merchandising co-pilot. Answer only from the supplied business context. Be commercially specific, concise, and action-oriented. Mention products, markets, units, revenue, stock, returns, or customer segments when relevant. Never invent data. If the context cannot answer something, say so and suggest the closest available analysis. Use short paragraphs or bullets and keep the answer under 220 words.${profile?.companyName ? ` Address ${profile.companyName} by name in the opening sentence so the recommendation is clearly personalized.` : ""}`,
+      instructions: `You are TrendMerch AI, a senior fashion merchandising co-pilot. Answer only from the supplied business context. Be commercially specific, concise, and action-oriented. Mention products, markets, units, revenue, stock, returns, or customer segments when relevant. Never invent data. If the context cannot answer something, say so and suggest the closest available analysis. Use short paragraphs or bullets and keep the answer under 220 words.${profile?.companyName ? ` Address ${profile.companyName} by name in the opening sentence so the recommendation is clearly personalized.` : ""}${profile ? ` The primary business goal this month is "${profile.businessGoal}". ${businessGoalGuidance(profile.businessGoal)}` : ""}`,
       input: `${buildBusinessContext(profile, records, timeframe)}\n\nUSER QUESTION\n${question}`,
     });
 

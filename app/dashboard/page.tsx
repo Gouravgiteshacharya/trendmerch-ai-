@@ -22,20 +22,25 @@ import {
 import { formatCompactInr } from "@/lib/format";
 import { useAnalyticsData } from "@/lib/use-analytics-data";
 
-const productColors = ["#edc4b5", "#c6d4e5", "#d8cbea"];
+const productColors = ["#d6c39d", "#c3c8ad", "#d5b6a2"];
 
 function signedPercent(value: number) {
   return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
 }
 
 export default function DashboardPage() {
-  const { records, timeframe, hasEnoughData, isHydrated } = useAnalyticsData();
+  const { records, timeframe, hasEnoughData, isHydrated, profile } = useAnalyticsData();
+  const workspaceName =
+    profile.updatedAt && profile.companyName.trim() ? profile.companyName.trim() : "";
+  const workspaceGreeting = workspaceName
+    ? `Welcome back, ${workspaceName}${/\bteam$/i.test(workspaceName) ? "" : " Team"}`
+    : "Welcome back, Merchandiser";
 
   if (!isHydrated) {
     return (
       <>
         <PageHeader
-          title="Welcome back, Merchandiser"
+          title={workspaceGreeting}
           description="Here is what is moving across your assortment and where your attention will have the most impact."
         />
         <DataLoadingState />
@@ -47,7 +52,7 @@ export default function DashboardPage() {
     return (
       <>
         <PageHeader
-          title="Welcome back, Merchandiser"
+          title={workspaceGreeting}
           description="Choose a wider timeframe to unlock reliable revenue, inventory, market, and trend analytics."
         />
         <DataSourceCard />
@@ -75,7 +80,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        title="Welcome back, Merchandiser"
+        title={workspaceGreeting}
         description="Here is what is moving across your assortment and where your attention will have the most impact."
       />
 
@@ -138,10 +143,10 @@ export default function DashboardPage() {
         <article className="soft-card rounded-3xl p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-[17px] font-bold text-[#363142]">Trending products</h2>
-              <p className="mt-1 text-xs text-[#98929f]">Products gaining momentum this week</p>
+              <h2 className="editorial-serif text-[20px] font-semibold text-[#40362c]">Trending products</h2>
+              <p className="mt-1 text-xs text-[#887b6e]">Products gaining momentum this week</p>
             </div>
-            <Link href="/products" className="text-xs font-bold text-[#7b689a]">
+            <Link href="/products" className="text-xs font-bold text-[#697052]">
               View all
             </Link>
           </div>
@@ -149,21 +154,21 @@ export default function DashboardPage() {
             {trendingProducts.map((product, index) => (
               <div
                 key={product.productId}
-                className="flex items-center gap-4 rounded-2xl border border-[#f0edf1] bg-white/60 p-3"
+                className="flex items-center gap-4 rounded-2xl border border-[#ded2bf] bg-[#f6f0e6] p-3"
               >
                 <span
-                  className="grid size-11 shrink-0 place-items-center rounded-xl text-sm font-bold text-[#514956]"
+                  className="grid size-11 shrink-0 place-items-center rounded-xl text-sm font-bold text-[#51463b]"
                   style={{ backgroundColor: productColors[index] }}
                 >
                   0{index + 1}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold text-[#45404c]">
+                  <span className="block truncate text-sm font-bold text-[#493f35]">
                     {product.productName}
                   </span>
-                  <span className="mt-0.5 block text-xs text-[#9a949f]">{product.category}</span>
+                  <span className="mt-0.5 block text-xs text-[#918476]">{product.category}</span>
                 </span>
-                <span className="rounded-full bg-[#e6f1eb] px-2.5 py-1 text-xs font-bold text-[#58806f]">
+                <span className="rounded-full border border-[#aab092]/50 bg-[#e7eadf] px-2.5 py-1 text-xs font-bold text-[#5e684d]">
                   {product.score} score
                 </span>
               </div>
@@ -171,31 +176,31 @@ export default function DashboardPage() {
           </div>
         </article>
 
-        <article className="relative overflow-hidden rounded-3xl bg-[#342f43] p-6 text-white shadow-[0_18px_48px_rgba(52,47,67,0.2)]">
-          <div className="absolute -right-16 -top-16 size-48 rounded-full bg-[#9b82bb]/25 blur-2xl" />
-          <div className="absolute -bottom-20 left-1/3 size-48 rounded-full bg-[#efa18e]/15 blur-2xl" />
+        <article className="relative overflow-hidden rounded-3xl border border-[#6d745a] bg-[#40483a] p-6 text-[#fffaf0] shadow-[0_18px_48px_rgba(55,57,43,0.18)]">
+          <div className="absolute -right-16 -top-16 size-48 rounded-full bg-[#c2aa76]/15 blur-2xl" />
+          <div className="absolute -bottom-20 left-1/3 size-48 rounded-full bg-[#9d6c55]/12 blur-2xl" />
           <div className="relative">
             <div className="flex items-center justify-between">
-              <span className="grid size-10 place-items-center rounded-2xl bg-white/10 text-[#ddc9f1]">
+              <span className="grid size-10 place-items-center rounded-2xl bg-[#d8c59c]/12 text-[#e0ca9a]">
                 <Icon name="sparkles" className="size-5" />
               </span>
-              <span className="rounded-full bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#d8cee1]">
-                AI recommendation
+              <span className="rounded-full border border-[#d6c18f]/25 bg-white/[0.06] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#dbc99f]">
+                Atelier recommendation
               </span>
             </div>
-            <h2 className="mt-8 text-2xl font-bold leading-tight tracking-[-0.035em]">
+            <h2 className="editorial-serif mt-8 text-2xl font-semibold leading-tight tracking-[-0.035em]">
               {leadRisk
                 ? `Restock ${leadRisk.productName} before the next demand peak.`
                 : "Inventory cover is healthy across the assortment."}
             </h2>
-            <p className="mt-3 text-sm leading-6 text-[#c6bfcb]">
+            <p className="mt-3 text-sm leading-6 text-[#d1c9ba]">
               {leadRisk
                 ? `${leadRisk.productName} has sold ${leadRisk.unitsSold} units with only ${leadRisk.stockAvailable} units in the latest stock snapshot. Prioritize ${leadState?.label ?? "the strongest market"} to protect an estimated ${formatCompactInr(estimatedOpportunity)} in revenue.`
                 : "No products currently meet the stockout-risk threshold in this dataset."}
             </p>
             <Link
               href="/ai-chat"
-              className="mt-7 inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-xs font-bold text-[#3c3549]"
+              className="mt-7 inline-flex items-center gap-2 rounded-2xl bg-[#f1e7d4] px-4 py-2.5 text-xs font-bold text-[#41382e] transition hover:bg-[#fff8ec]"
             >
               Explore recommendation <Icon name="arrow" className="size-4" />
             </Link>

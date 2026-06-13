@@ -7,7 +7,7 @@ export function TimeframeBadge({ className = "" }: { className?: string }) {
   const timeframe = useTimeframe();
   return (
     <span
-      className={`inline-flex rounded-full bg-[#eee8f5] px-3 py-1.5 text-[10px] font-bold text-[#705e8c] ${className}`}
+      className={`inline-flex rounded-full border border-[#cfc2a7] bg-[#f3eddf] px-3 py-1.5 text-[10px] font-bold text-[#63694f] ${className}`}
     >
       Timeframe: {timeframeLabel(timeframe)}
     </span>

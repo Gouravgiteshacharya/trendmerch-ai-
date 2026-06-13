@@ -6,14 +6,14 @@ import { Sidebar } from "@/components/Sidebar";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  if (pathname === "/") {
+  if (pathname === "/" || pathname === "/onboarding") {
     return <>{children}</>;
   }
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[264px_1fr]">
+    <div className="internal-app min-h-screen bg-[#eee7da] text-[#3b3127] lg:grid lg:grid-cols-[276px_1fr]">
       <Sidebar />
-      <main className="min-w-0 px-4 pb-10 pt-5 sm:px-6 lg:px-8 lg:py-8 xl:px-10">
+      <main className="min-w-0 px-4 pb-10 pt-5 sm:px-6 lg:px-8 lg:py-9 xl:px-10">
         <div className="mx-auto max-w-[1480px]">{children}</div>
       </main>
     </div>

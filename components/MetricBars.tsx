@@ -10,7 +10,7 @@ type MetricBarsProps = {
   suffix?: string;
 };
 
-const defaultColors = ["#9d89bd", "#e7a58f", "#8db6a6", "#9fb7d1", "#ca9eac"];
+const defaultColors = ["#667052", "#aa8b58", "#a66f55", "#887668", "#9a9277"];
 
 export function MetricBars({ data, colors = defaultColors, suffix = "" }: MetricBarsProps) {
   const maxValue = Math.max(...data.map((item) => item.value), 1);
@@ -20,12 +20,12 @@ export function MetricBars({ data, colors = defaultColors, suffix = "" }: Metric
       {data.map((item, index) => (
         <div key={item.label}>
           <div className="mb-1.5 flex items-center justify-between gap-4 text-xs">
-            <span className="truncate font-semibold text-[#5d5766]">{item.label}</span>
-            <span className="shrink-0 font-bold text-[#77707e]">
+            <span className="truncate font-semibold text-[#5a5045]">{item.label}</span>
+            <span className="shrink-0 font-bold text-[#7f7265]">
               {item.detail ?? `${item.value.toLocaleString("en-IN")}${suffix}`}
             </span>
           </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-[#efecf1]">
+          <div className="h-2.5 overflow-hidden rounded-full bg-[#e8dfd1]">
             <div
               className="h-full rounded-full"
               style={{
@@ -39,4 +39,3 @@ export function MetricBars({ data, colors = defaultColors, suffix = "" }: Metric
     </div>
   );
 }
-

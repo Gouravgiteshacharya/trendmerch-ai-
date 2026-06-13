@@ -8,12 +8,14 @@ import {
   ageGroupOptions,
   averageOrderValueOptions,
   brandTypeOptions,
+  businessGoalOptions,
   categoryOptions,
   challengeOptions,
   dataSourceLabel,
   genderOptions,
   inventoryProblemOptions,
   regionOptions,
+  roleOptions,
   returnRateOptions,
   revenueRangeOptions,
   saveBusinessProfile,
@@ -75,7 +77,7 @@ const modeOptions: {
 ];
 
 const inputClass =
-  "mt-2 w-full rounded-2xl border border-[#e8e2eb] bg-white/80 px-4 py-3 text-sm text-[#4c4553] outline-none transition placeholder:text-[#aaa3ae] focus:border-[#b8a5ce] focus:ring-4 focus:ring-[#eee8f5]";
+  "mt-2 w-full rounded-2xl border border-[#d2c3ac] bg-[#fcf8f1] px-4 py-3 text-sm text-[#4b4137] outline-none transition placeholder:text-[#9b8f82] focus:border-[#8d8f6c] focus:ring-4 focus:ring-[#e7e5d7]";
 
 function Field({
   label,
@@ -85,7 +87,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block text-xs font-bold text-[#655e6b]">
+    <label className="block text-xs font-bold text-[#655a4f]">
       {label}
       {children}
     </label>
@@ -111,6 +113,83 @@ function SelectField({
         ))}
       </select>
     </Field>
+  );
+}
+
+function RegionMultiSelect({
+  value,
+  onChange,
+}: {
+  value: string[];
+  onChange: (value: string[]) => void;
+}) {
+  const selected = value.length > 0 ? value : [regionOptions[0]];
+
+  function toggle(region: string) {
+    if (region === "Entire India") {
+      onChange(["Entire India"]);
+      return;
+    }
+
+    const withoutAllIndia = selected.filter((item) => item !== "Entire India");
+    const next = withoutAllIndia.includes(region)
+      ? withoutAllIndia.filter((item) => item !== region)
+      : [...withoutAllIndia, region];
+    onChange(next.length > 0 ? next : ["Entire India"]);
+  }
+
+  return (
+    <div className="sm:col-span-2">
+      <p className="text-xs font-bold text-[#655a4f]">Main Selling Regions</p>
+      <details className="group mt-2 rounded-2xl border border-[#d2c3ac] bg-[#fcf8f1] open:border-[#8d8f6c] open:ring-4 open:ring-[#e7e5d7]">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 text-sm text-[#4b4137]">
+          <span className="min-w-0 truncate font-semibold">
+            {selected.includes("Entire India")
+              ? "Entire India"
+              : `${selected.length} region${selected.length === 1 ? "" : "s"} selected`}
+          </span>
+          <span className="text-[#7b805f] transition group-open:rotate-45">+</span>
+        </summary>
+        <div className="border-t border-[#d9ccb8] p-3">
+          <div className="mb-3 flex flex-wrap gap-2">
+            {selected.map((region) => (
+              <span
+                key={region}
+                className="rounded-full border border-[#aeb495]/50 bg-[#e5e8dc] px-2.5 py-1 text-[10px] font-bold text-[#596149]"
+              >
+                {region}
+              </span>
+            ))}
+          </div>
+          <div className="grid max-h-64 gap-1 overflow-y-auto pr-1 sm:grid-cols-2">
+            {regionOptions.map((region) => {
+              const checked = selected.includes(region);
+              return (
+                <label
+                  key={region}
+                  className={`flex cursor-pointer items-start gap-2 rounded-xl px-3 py-2 text-xs transition ${
+                    checked
+                      ? "bg-[#e5e8dc] font-bold text-[#596149]"
+                      : "text-[#675d52] hover:bg-[#f1eadf]"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggle(region)}
+                    className="mt-0.5 size-3.5 shrink-0"
+                  />
+                  {region}
+                </label>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-[10px] leading-4 text-[#887b6e]">
+            Choose Entire India or select multiple priority states and union territories.
+          </p>
+        </div>
+      </details>
+    </div>
   );
 }
 
@@ -229,19 +308,19 @@ function BusinessSetupForm({
               onClick={() => chooseMode(option.value)}
               className={`rounded-3xl border p-5 text-left transition ${
                 active
-                  ? "border-[#bba9cf] bg-[#eee8f5] shadow-[0_14px_38px_rgba(90,70,120,0.1)]"
-                  : "border-white bg-white/65 shadow-[0_12px_36px_rgba(58,48,82,0.05)] hover:border-[#ddd3e5]"
+                  ? "border-[#8f9271] bg-[#e4e8da] shadow-[0_14px_34px_rgba(70,76,56,0.1)]"
+                  : "border-[#d6c7b0] bg-[#faf6ee] shadow-[0_12px_30px_rgba(70,55,38,0.045)] hover:border-[#ad9979]"
               }`}
             >
               <span
                 className={`grid size-10 place-items-center rounded-2xl ${
-                  active ? "bg-[#75618f] text-white" : "bg-[#f0ebf3] text-[#766789]"
+                  active ? "bg-[#40483a] text-[#fff8ec]" : "bg-[#eee5d7] text-[#7b6849]"
                 }`}
               >
                 <Icon name={option.icon} className="size-4" />
               </span>
-              <span className="mt-4 block text-base font-bold text-[#403a47]">{option.title}</span>
-              <span className="mt-1 block text-xs leading-5 text-[#827b87]">
+              <span className="editorial-serif mt-4 block text-lg font-semibold text-[#40362c]">{option.title}</span>
+              <span className="mt-1 block text-xs leading-5 text-[#817467]">
                 {option.description}
               </span>
             </button>
@@ -250,16 +329,16 @@ function BusinessSetupForm({
       </section>
 
       <section className="soft-card mt-5 rounded-3xl p-5 sm:p-7">
-        <div className="flex flex-col gap-3 border-b border-[#eeeaf0] pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-[#d9ccb8] pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a86b2]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a7d4f]">
               {dataSourceLabel(mode)}
             </p>
-            <h2 className="mt-2 text-xl font-bold tracking-[-0.02em] text-[#3d3745]">
+            <h2 className="editorial-serif mt-2 text-2xl font-semibold tracking-[-0.02em] text-[#40362c]">
               Configure your business context
             </h2>
           </div>
-          <span className="w-fit rounded-full bg-[#e7f1eb] px-3 py-1.5 text-[10px] font-bold text-[#547565]">
+          <span className="w-fit rounded-full border border-[#879174]/40 bg-[#e4e8da] px-3 py-1.5 text-[10px] font-bold text-[#596149]">
             Stored locally in this browser
           </span>
         </div>
@@ -274,16 +353,33 @@ function BusinessSetupForm({
               required
             />
           </Field>
+          <SelectField
+            label="Role"
+            value={profile.role}
+            options={roleOptions}
+            onChange={(value) => update("role", value)}
+          />
+          <SelectField
+            label="Brand Type"
+            value={profile.brandType}
+            options={brandTypeOptions}
+            onChange={(value) => update("brandType", value)}
+          />
+          <SelectField
+            label="Business Goal for This Month"
+            value={profile.businessGoal}
+            options={businessGoalOptions}
+            onChange={(value) => update("businessGoal", value)}
+          />
 
           {mode === "demo" ? (
             <>
-              <SelectField label="Brand Type" value={profile.brandType} options={brandTypeOptions} onChange={(value) => update("brandType", value)} />
               <SelectField label="Primary Category" value={profile.primaryCategory} options={categoryOptions} onChange={(value) => { update("primaryCategory", value); update("topProductCategories", [value]); }} />
               <SelectField label="Monthly Revenue Range" value={profile.monthlyRevenueRange} options={revenueRangeOptions} onChange={(value) => update("monthlyRevenueRange", value)} />
               <SelectField label="Average Order Value" value={profile.averageOrderValue} options={averageOrderValueOptions} onChange={(value) => update("averageOrderValue", value)} />
               <SelectField label="Target Age Group" value={profile.targetAgeGroup} options={ageGroupOptions} onChange={(value) => update("targetAgeGroup", value)} />
               <SelectField label="Target Gender" value={profile.targetGender} options={genderOptions} onChange={(value) => update("targetGender", value)} />
-              <SelectField label="Main Regions" value={profile.mainRegions[0] ?? regionOptions[0]} options={regionOptions} onChange={(value) => update("mainRegions", [value])} />
+              <RegionMultiSelect value={profile.mainRegions} onChange={(value) => update("mainRegions", value)} />
               <SelectField label="Biggest Challenge" value={profile.biggestBusinessChallenge} options={challengeOptions} onChange={(value) => update("biggestBusinessChallenge", value)} />
               <SelectField label="Return Rate Range" value={profile.returnRateRange} options={returnRateOptions} onChange={(value) => update("returnRateRange", value)} />
               <SelectField label="Inventory Problem" value={profile.inventoryProblem} options={inventoryProblemOptions} onChange={(value) => update("inventoryProblem", value)} />
@@ -293,7 +389,6 @@ function BusinessSetupForm({
           {mode === "manual" ? (
             <>
               {([
-                ["Brand Type", "brandType"],
                 ["Primary Category", "primaryCategory"],
                 ["Monthly Revenue Range", "monthlyRevenueRange"],
                 ["Average Order Value", "averageOrderValue"],
@@ -327,43 +422,43 @@ function BusinessSetupForm({
 
         {mode === "csv" ? (
           <div className="mt-6">
-            <label className="block rounded-3xl border border-dashed border-[#cfc1da] bg-[#faf7fb] p-6 text-center transition hover:bg-[#f6f1f8]">
-              <span className="mx-auto grid size-11 place-items-center rounded-2xl bg-[#eee8f5] text-[#725e8f]">
+            <label className="block rounded-3xl border border-dashed border-[#ad9979] bg-[#f4ede2] p-6 text-center transition hover:bg-[#eee5d7]">
+              <span className="mx-auto grid size-11 place-items-center rounded-2xl bg-[#e4e8da] text-[#596149]">
                 <Icon name="report" className="size-5" />
               </span>
-              <span className="mt-3 block text-sm font-bold text-[#494250]">Choose a CSV file</span>
-              <span className="mt-1 block text-xs text-[#8d8692]">
+              <span className="mt-3 block text-sm font-bold text-[#4b4137]">Choose a CSV file</span>
+              <span className="mt-1 block text-xs text-[#817467]">
                 Required columns are validated before the data is saved.
               </span>
               <input type="file" accept=".csv,text/csv" onChange={handleCsv} className="sr-only" />
             </label>
-            <p className="mt-3 text-[11px] leading-5 text-[#8e8793]">
+            <p className="mt-3 text-[11px] leading-5 text-[#887b6e]">
               Expected: {expectedFields.join(", ")}
             </p>
             {csvError ? (
-              <p className="mt-3 rounded-2xl bg-[#fbede9] px-4 py-3 text-xs font-semibold text-[#9a5f55]">
+              <p className="mt-3 rounded-2xl border border-[#d7aa98] bg-[#f4e1d8] px-4 py-3 text-xs font-semibold text-[#985c45]">
                 {csvError}
               </p>
             ) : null}
 
             {uploadedRows.length > 0 ? (
-              <div className="mt-5 overflow-hidden rounded-2xl border border-[#ebe6ed]">
-                <div className="flex items-center justify-between bg-white/75 px-4 py-3">
-                  <p className="text-xs font-bold text-[#514a57]">CSV preview</p>
-                  <span className="text-[10px] font-bold text-[#7b6b8c]">
+              <div className="mt-5 overflow-hidden rounded-2xl border border-[#d8cab5]">
+                <div className="flex items-center justify-between bg-[#faf6ee] px-4 py-3">
+                  <p className="text-xs font-bold text-[#51473d]">CSV preview</p>
+                  <span className="text-[10px] font-bold text-[#697052]">
                     {uploadedRows.length} rows parsed
                   </span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="min-w-[900px] w-full text-left text-[11px]">
-                    <thead className="bg-[#f6f2f7] text-[#817888]">
+                    <thead className="bg-[#e9dfd0] text-[#76695c]">
                       <tr>
                         {expectedFields.slice(0, 8).map((field) => (
                           <th key={field} className="px-3 py-2.5 font-bold">{field}</th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#eeeaf0] bg-white/55 text-[#625b67]">
+                    <tbody className="divide-y divide-[#e3d8c7] bg-[#faf6ee] text-[#62584d]">
                       {uploadedRows.slice(0, 6).map((row, index) => (
                         <tr key={`${row.date}-${row.product_name}-${index}`}>
                           {expectedFields.slice(0, 8).map((field) => (
@@ -381,15 +476,15 @@ function BusinessSetupForm({
           </div>
         ) : null}
 
-        <div className="mt-7 flex flex-col gap-3 border-t border-[#eeeaf0] pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-[#8c8590]">
+        <div className="mt-7 flex flex-col gap-3 border-t border-[#d9ccb8] pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-[#887b6e]">
             {saved
-              ? "Setup saved. Dashboard, AI Chat, and Weekly Report now use this profile."
+              ? "Setup saved. Dashboard, AI Assistant, and Merchandising Report now use this profile."
               : "Save to activate this profile across TrendMerch AI."}
           </p>
           <button
             type="submit"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#373142] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(55,49,66,0.18)]"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#3d352d] px-5 py-3 text-sm font-bold text-[#fff8ec] shadow-[0_10px_24px_rgba(55,45,36,0.16)] transition hover:bg-[#4b4136]"
           >
             <Icon name="sparkles" className="size-4" />
             Save Business Setup

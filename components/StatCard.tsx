@@ -11,10 +11,10 @@ type StatCardProps = {
 };
 
 const tones = {
-  lavender: "from-[#f1ebf8] to-[#fbf9fd] text-[#766099]",
-  peach: "from-[#fae7df] to-[#fffaf8] text-[#a96755]",
-  mint: "from-[#e2f1e9] to-[#f9fcfa] text-[#55806f]",
-  blue: "from-[#e4edf7] to-[#fafcfe] text-[#5d7695]",
+  lavender: "border-t-[#aa8b58] text-[#8d7044]",
+  peach: "border-t-[#b67858] text-[#a66f55]",
+  mint: "border-t-[#687153] text-[#596149]",
+  blue: "border-t-[#887668] text-[#756357]",
 };
 
 export function StatCard({
@@ -31,20 +31,20 @@ export function StatCard({
 
   return (
     <article
-      className={`rounded-3xl bg-gradient-to-br ${tones[tone]} p-5 shadow-[0_16px_45px_rgba(58,48,82,0.07)]`}
+      className={`rounded-3xl border border-[#d6c7b0] border-t-[3px] bg-[#faf6ee] ${tones[tone]} p-5 shadow-[0_16px_38px_rgba(70,55,38,0.07)]`}
     >
       <div className="flex items-start justify-between">
-        <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#777181]">{label}</p>
-        <span className="grid size-9 place-items-center rounded-xl bg-white/65">
+        <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#786d60]">{label}</p>
+        <span className="grid size-9 place-items-center rounded-xl border border-[#dfd2bf] bg-[#f3ecdf]">
           <Icon name={icon} className="size-[17px]" />
         </span>
       </div>
-      <p className="mt-5 text-[28px] font-bold tracking-[-0.04em] text-[#302c3e]">{value}</p>
+      <p className="editorial-serif mt-5 text-[30px] font-semibold tracking-[-0.04em] text-[#3b3127]">{value}</p>
       <div className="mt-2 flex items-center gap-2 text-xs">
-        <span className={`font-bold ${good ? "text-[#588675]" : "text-[#c07165]"}`}>
+        <span className={`font-bold ${good ? "text-[#657052]" : "text-[#a66f55]"}`}>
           {change}
         </span>
-        <span className="text-[#97919c]">{detail}</span>
+        <span className="text-[#918578]">{detail}</span>
       </div>
     </article>
   );

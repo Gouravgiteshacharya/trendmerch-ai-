@@ -5,7 +5,7 @@ export default function AIChatPage() {
   return (
     <>
       <PageHeader
-        title="AI Chat"
+        title="AI Co-Pilot"
         description="Ask profile-aware merchandising questions and inspect the analytics behind every recommendation."
       />
       <AIChatExperience />
