@@ -81,7 +81,7 @@ export function Sidebar() {
           GA
         </span>
         <span>
-          <span className="block text-xs font-bold text-[#494451]">Gourav Acharya</span>
+          <span className="block text-xs font-bold text-[#494451]">Merchandiser</span>
           <span className="block text-[11px] text-[#9b96a1]">Merchandising team</span>
         </span>
       </div>

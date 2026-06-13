@@ -50,7 +50,7 @@ export default function DashboardPage() {
     <>
       <PageHeader
         eyebrow="Data through 12 June 2026"
-        title="Good morning, Gourav"
+        title="Welcome back, Merchandiser"
         description="Here is what is moving across your assortment and where your attention will have the most impact."
       >
         <button className="rounded-2xl bg-[#363143] px-4 py-2.5 text-xs font-bold text-white shadow-[0_10px_24px_rgba(54,49,67,0.18)]">
