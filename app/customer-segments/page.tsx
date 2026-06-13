@@ -2,9 +2,11 @@
 
 import { ChartCard } from "@/components/ChartCard";
 import { DataEmptyState } from "@/components/DataEmptyState";
+import { DataLoadingState } from "@/components/DataLoadingState";
 import { MetricBars } from "@/components/MetricBars";
 import { PageHeader } from "@/components/PageHeader";
 import { demandByGender } from "@/lib/analytics";
+import { formatCompactInr } from "@/lib/format";
 import {
   categoryPreferenceByAge,
   segmentIntelligence,
@@ -12,15 +14,8 @@ import {
 } from "@/lib/intelligence";
 import { useAnalyticsData } from "@/lib/use-analytics-data";
 
-const currency = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
-
 export default function CustomerSegmentsPage() {
-  const { records, timeframe, hasEnoughData } = useAnalyticsData();
+  const { records, timeframe, hasEnoughData, isHydrated } = useAnalyticsData();
   const segments = hasEnoughData ? segmentIntelligence(records) : [];
   const genderDemand = hasEnoughData ? demandByGender(records) : [];
   const preferences = hasEnoughData ? categoryPreferenceByAge(records) : [];
@@ -32,7 +27,9 @@ export default function CustomerSegmentsPage() {
         description="Translate age, gender, and category affinity into sharper assortment and campaign decisions."
       />
 
-      {!hasEnoughData ? (
+      {!isHydrated ? (
+        <DataLoadingState />
+      ) : !hasEnoughData ? (
         <DataEmptyState timeframe={timeframe} recordCount={records.length} />
       ) : (
         <>
@@ -145,7 +142,7 @@ export default function CustomerSegmentsPage() {
                   </td>
                   <td className="px-5 py-4 text-xs text-[#69626e]">{segment.topProduct}</td>
                   <td className="px-5 py-4 text-sm font-bold text-[#49434f]">
-                    {currency.format(totalSegmentRevenue(records, segment.label))}
+                    {formatCompactInr(totalSegmentRevenue(records, segment.label))}
                   </td>
                   <td className="px-5 py-4 text-sm text-[#69626e]">{segment.units}</td>
                   <td className="max-w-xs px-5 py-4 text-xs leading-5 text-[#746d79]">

@@ -1,13 +1,14 @@
 "use client";
 
 import { DataEmptyState } from "@/components/DataEmptyState";
+import { DataLoadingState } from "@/components/DataLoadingState";
 import { PageHeader } from "@/components/PageHeader";
 import { ProductsTable } from "@/components/ProductsTable";
 import { productIntelligence } from "@/lib/intelligence";
 import { useAnalyticsData } from "@/lib/use-analytics-data";
 
 export default function ProductsPage() {
-  const { records, timeframe, hasEnoughData } = useAnalyticsData();
+  const { records, timeframe, hasEnoughData, isHydrated } = useAnalyticsData();
   const products = hasEnoughData ? productIntelligence(records) : [];
   const lowStock = products.filter((product) => product.risk === "Low Stock").length;
   const overstock = products.filter((product) => product.risk === "Overstock").length;
@@ -20,7 +21,9 @@ export default function ProductsPage() {
         description="Monitor SKU velocity, inventory cover, return exposure, and trend momentum across the assortment."
       />
 
-      {!hasEnoughData ? (
+      {!isHydrated ? (
+        <DataLoadingState />
+      ) : !hasEnoughData ? (
         <DataEmptyState timeframe={timeframe} recordCount={records.length} />
       ) : (
         <>

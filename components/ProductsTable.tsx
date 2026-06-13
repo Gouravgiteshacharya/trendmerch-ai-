@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatCompactInr } from "@/lib/format";
 import type { ProductIntelligence, ProductRisk } from "@/lib/intelligence";
 
 const filters: Array<"All" | ProductRisk> = [
@@ -18,13 +19,6 @@ const riskStyles: Record<ProductRisk, string> = {
   Trending: "bg-[#ece5f5] text-[#70598e]",
   Healthy: "bg-[#e4f0e9] text-[#537867]",
 };
-
-const currency = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
 
 export function ProductsTable({ products }: { products: ProductIntelligence[] }) {
   const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>("All");
@@ -102,7 +96,7 @@ export function ProductsTable({ products }: { products: ProductIntelligence[] })
                   {product.category}
                 </td>
                 <td className="px-5 py-4 text-sm font-bold text-[#494350]">
-                  {currency.format(product.revenue)}
+                  {formatCompactInr(product.revenue)}
                 </td>
                 <td className="px-5 py-4 text-sm text-[#68616d]">{product.unitsSold}</td>
                 <td className="px-5 py-4 text-sm text-[#68616d]">{product.stockAvailable}</td>
@@ -142,4 +136,3 @@ export function ProductsTable({ products }: { products: ProductIntelligence[] })
     </section>
   );
 }
-

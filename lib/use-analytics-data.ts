@@ -13,6 +13,7 @@ import { useBusinessProfile } from "@/lib/use-business-profile";
 import { useTimeframe } from "@/lib/use-timeframe";
 
 const emptySnapshot = "";
+const subscribeHydration = () => () => {};
 
 function subscribe(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
@@ -44,6 +45,7 @@ function parseUploadedRows(snapshot: string) {
 export function useAnalyticsData() {
   const profile = useBusinessProfile();
   const timeframe = useTimeframe();
+  const isHydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
   const uploadedSnapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   return useMemo(() => {
@@ -61,6 +63,7 @@ export function useAnalyticsData() {
       profile,
       isUploadedData: profile.source === "csv" && uploadedRecords.length > 0,
       hasEnoughData: records.length >= 3,
+      isHydrated,
     };
-  }, [profile, timeframe, uploadedSnapshot]);
+  }, [profile, timeframe, uploadedSnapshot, isHydrated]);
 }

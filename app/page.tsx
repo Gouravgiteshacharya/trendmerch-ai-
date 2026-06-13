@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CategoryChart, DemandChart } from "@/components/mock-charts";
 import { ChartCard } from "@/components/ChartCard";
 import { DataEmptyState } from "@/components/DataEmptyState";
+import { DataLoadingState } from "@/components/DataLoadingState";
 import { DataSourceCard } from "@/components/DataSourceCard";
 import { Icon } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
@@ -18,14 +19,8 @@ import {
   totalUnitsSold,
   trendScoreByProduct,
 } from "@/lib/analytics";
+import { formatCompactInr } from "@/lib/format";
 import { useAnalyticsData } from "@/lib/use-analytics-data";
-
-const currency = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
 
 const productColors = ["#edc4b5", "#c6d4e5", "#d8cbea"];
 
@@ -34,7 +29,19 @@ function signedPercent(value: number) {
 }
 
 export default function DashboardPage() {
-  const { records, timeframe, hasEnoughData } = useAnalyticsData();
+  const { records, timeframe, hasEnoughData, isHydrated } = useAnalyticsData();
+
+  if (!isHydrated) {
+    return (
+      <>
+        <PageHeader
+          title="Welcome back, Merchandiser"
+          description="Here is what is moving across your assortment and where your attention will have the most impact."
+        />
+        <DataLoadingState />
+      </>
+    );
+  }
 
   if (!hasEnoughData) {
     return (
@@ -77,7 +84,7 @@ export default function DashboardPage() {
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Total Revenue"
-          value={currency.format(revenue)}
+          value={formatCompactInr(revenue)}
           change={signedPercent(revenueGrowth)}
           detail="momentum inside selected data"
           icon="revenue"
@@ -183,7 +190,7 @@ export default function DashboardPage() {
             </h2>
             <p className="mt-3 text-sm leading-6 text-[#c6bfcb]">
               {leadRisk
-                ? `${leadRisk.productName} has sold ${leadRisk.unitsSold} units with only ${leadRisk.stockAvailable} units in the latest stock snapshot. Prioritize ${leadState?.label ?? "the strongest market"} to protect an estimated ${currency.format(estimatedOpportunity)} in revenue.`
+                ? `${leadRisk.productName} has sold ${leadRisk.unitsSold} units with only ${leadRisk.stockAvailable} units in the latest stock snapshot. Prioritize ${leadState?.label ?? "the strongest market"} to protect an estimated ${formatCompactInr(estimatedOpportunity)} in revenue.`
                 : "No products currently meet the stockout-risk threshold in this dataset."}
             </p>
             <Link

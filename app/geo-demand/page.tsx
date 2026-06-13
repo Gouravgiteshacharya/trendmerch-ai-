@@ -2,20 +2,15 @@
 
 import { ChartCard } from "@/components/ChartCard";
 import { DataEmptyState } from "@/components/DataEmptyState";
+import { DataLoadingState } from "@/components/DataLoadingState";
 import { MetricBars } from "@/components/MetricBars";
 import { PageHeader } from "@/components/PageHeader";
+import { formatCompactInr } from "@/lib/format";
 import { stateIntelligence } from "@/lib/intelligence";
 import { useAnalyticsData } from "@/lib/use-analytics-data";
 
-const currency = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
-
 export default function GeoDemandPage() {
-  const { records, timeframe, hasEnoughData } = useAnalyticsData();
+  const { records, timeframe, hasEnoughData, isHydrated } = useAnalyticsData();
   const states = hasEnoughData ? stateIntelligence(records) : [];
   const topStates = states.slice(0, 3);
 
@@ -26,7 +21,9 @@ export default function GeoDemandPage() {
         description="Understand regional demand, customer mix, and the inventory moves most likely to capture revenue."
       />
 
-      {!hasEnoughData ? (
+      {!isHydrated ? (
+        <DataLoadingState />
+      ) : !hasEnoughData ? (
         <DataEmptyState timeframe={timeframe} recordCount={records.length} />
       ) : (
         <>
@@ -48,7 +45,7 @@ export default function GeoDemandPage() {
             </div>
             <h2 className="mt-5 text-xl font-bold text-[#383241]">{state.label}</h2>
             <p className="mt-1 text-sm text-[#817985]">
-              {state.units} units · {currency.format(state.revenue)}
+              {state.units} units · {formatCompactInr(state.revenue)}
             </p>
             <p className="mt-4 text-xs font-semibold text-[#68616d]">
               Leads in {state.topCategory}
@@ -125,7 +122,7 @@ export default function GeoDemandPage() {
                   </td>
                   <td className="px-5 py-4 text-xs text-[#706976]">{state.topProduct}</td>
                   <td className="px-5 py-4 text-sm font-bold text-[#4c4652]">
-                    {currency.format(state.revenue)}
+                    {formatCompactInr(state.revenue)}
                   </td>
                   <td className="px-5 py-4 text-sm text-[#706976]">{state.units}</td>
                   <td className="px-5 py-4 text-xs text-[#706976]">

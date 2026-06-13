@@ -1,6 +1,7 @@
 "use client";
 
 import { DataEmptyState } from "@/components/DataEmptyState";
+import { DataLoadingState } from "@/components/DataLoadingState";
 import { PageHeader } from "@/components/PageHeader";
 import { trendIntelligence, type TrendDuration } from "@/lib/intelligence";
 import { useAnalyticsData } from "@/lib/use-analytics-data";
@@ -17,7 +18,7 @@ function signedPercent(value: number) {
 }
 
 export default function TrendIntelligencePage() {
-  const { records, timeframe, hasEnoughData } = useAnalyticsData();
+  const { records, timeframe, hasEnoughData, isHydrated } = useAnalyticsData();
   const trends = hasEnoughData ? trendIntelligence(records) : [];
   const rising = trends.filter((trend) => trend.growth > 0);
   const viral = trends.filter((trend) => trend.duration === "Viral spike");
@@ -30,7 +31,9 @@ export default function TrendIntelligencePage() {
         description="Rank emerging product signals, estimate their staying power, and translate momentum into merchandising action."
       />
 
-      {!hasEnoughData ? (
+      {!isHydrated ? (
+        <DataLoadingState />
+      ) : !hasEnoughData ? (
         <DataEmptyState timeframe={timeframe} recordCount={records.length} />
       ) : (
         <>

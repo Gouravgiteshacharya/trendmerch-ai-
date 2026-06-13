@@ -1,13 +1,7 @@
 import type { CategorySales, DemandMetric } from "@/lib/analytics";
+import { formatCompactInr } from "@/lib/format";
 
 const chartColors = ["#a18cc2", "#efb09c", "#91bbaa", "#a7bed7", "#d4a8b5"];
-
-const compactCurrency = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  notation: "compact",
-  maximumFractionDigits: 1,
-});
 
 export function CategoryChart({ data }: { data: CategorySales[] }) {
   const bars = data.slice(0, 5);
@@ -18,7 +12,7 @@ export function CategoryChart({ data }: { data: CategorySales[] }) {
       {bars.map((bar, index) => (
         <div key={bar.category} className="flex h-full min-w-0 flex-1 flex-col justify-end">
           <span className="mb-2 text-center text-[10px] font-bold text-[#88818d]">
-            {compactCurrency.format(bar.revenue)}
+            {formatCompactInr(bar.revenue)}
           </span>
           <div className="relative h-[76%] overflow-hidden rounded-t-xl bg-[#f1eef3]">
             <div
