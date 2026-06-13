@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/icons";
 
 const navigation: { label: string; href: string; icon: IconName }[] = [
-  { label: "Dashboard", href: "/", icon: "dashboard" },
+  { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
   { label: "Products", href: "/products", icon: "products" },
   { label: "Geo Demand", href: "/geo-demand", icon: "geo" },
   { label: "Customer Segments", href: "/customer-segments", icon: "customers" },
@@ -36,8 +36,7 @@ export function Sidebar() {
 
       <nav className="scrollbar-hidden -mx-1 mt-5 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:mt-10 lg:block lg:space-y-1.5 lg:overflow-visible lg:px-0">
         {navigation.map((item) => {
-          const active =
-            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const active = pathname.startsWith(item.href);
 
           return (
             <Link

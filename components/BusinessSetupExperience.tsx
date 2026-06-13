@@ -126,14 +126,16 @@ function loadUploadedRows() {
 
 function BusinessSetupForm({
   initialProfile,
+  initialMode,
   saved,
   onSavedChange,
 }: {
   initialProfile: BusinessProfile;
+  initialMode?: BusinessDataSource;
   saved: boolean;
   onSavedChange: (saved: boolean) => void;
 }) {
-  const [mode, setMode] = useState<BusinessDataSource>(initialProfile.source);
+  const [mode, setMode] = useState<BusinessDataSource>(initialMode ?? initialProfile.source);
   const [profile, setProfile] = useState<BusinessProfile>(initialProfile);
   const [uploadedRows, setUploadedRows] = useState<UploadedBusinessRow[]>(loadUploadedRows);
   const [csvError, setCsvError] = useState("");
@@ -398,13 +400,18 @@ function BusinessSetupForm({
   );
 }
 
-export function BusinessSetupExperience() {
+export function BusinessSetupExperience({
+  initialMode,
+}: {
+  initialMode?: BusinessDataSource;
+}) {
   const storedProfile = useBusinessProfile();
   const [saved, setSaved] = useState(false);
   return (
     <BusinessSetupForm
-      key={`${storedProfile.updatedAt}-${storedProfile.source}-${storedProfile.companyName}`}
+      key={`${storedProfile.updatedAt}-${storedProfile.source}-${storedProfile.companyName}-${initialMode ?? "saved"}`}
       initialProfile={storedProfile}
+      initialMode={initialMode}
       saved={saved}
       onSavedChange={setSaved}
     />
