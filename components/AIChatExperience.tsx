@@ -1,0 +1,225 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { Icon } from "@/components/icons";
+import { generateChatResponse } from "@/lib/ai-insights";
+
+type ChatMessage = {
+  id: number;
+  role: "assistant" | "user";
+  content: string;
+  source?: "openai" | "fallback";
+  note?: string;
+};
+
+const suggestions = [
+  "What should we restock this week?",
+  "Which products are trending?",
+  "Which states have highest demand?",
+  "Which customer segment should we target?",
+  "Which products need discounts?",
+  "Which products have high return risk?",
+];
+
+const welcomeMessage =
+  "Hello, I’m Mira, your merchandising co-pilot. I use OpenAI with a built-in local analytics fallback to answer inventory, trend, market, customer, return, and markdown questions.";
+
+export function AIChatExperience() {
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: 1, role: "assistant", content: welcomeMessage },
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function askQuestion(question: string) {
+    const trimmed = question.trim();
+    if (!trimmed || isLoading) return;
+
+    const timestamp = Date.now();
+    setMessages((current) => [
+      ...current,
+      { id: timestamp, role: "user", content: trimmed },
+    ]);
+    setInput("");
+    setIsLoading(true);
+
+    let answer = generateChatResponse(trimmed);
+    let source: ChatMessage["source"] = "fallback";
+    let note: string | undefined;
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: trimmed }),
+      });
+      const data = (await response.json()) as {
+        answer?: unknown;
+        source?: unknown;
+        note?: unknown;
+      };
+
+      if (response.ok && typeof data.answer === "string" && data.answer.trim()) {
+        answer = data.answer;
+        source = data.source === "openai" ? "openai" : "fallback";
+        note = typeof data.note === "string" ? data.note : undefined;
+      }
+    } catch {
+      // The local rules engine already provides a complete fallback response.
+    }
+
+    setMessages((current) => [
+      ...current,
+      { id: timestamp + 1, role: "assistant", content: answer, source, note },
+    ]);
+    setIsLoading(false);
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    askQuestion(input);
+  }
+
+  return (
+    <div className="grid min-h-[680px] gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <section className="soft-card flex min-h-[640px] flex-col overflow-hidden rounded-3xl">
+        <div className="flex items-center gap-3 border-b border-[#eeeaf0] p-5">
+          <span className="grid size-11 place-items-center rounded-2xl bg-[#373142] text-[#ddcdec] shadow-[0_10px_24px_rgba(55,49,66,0.2)]">
+            <Icon name="sparkles" className="size-5" />
+          </span>
+          <div>
+            <h2 className="text-sm font-bold text-[#403a47]">Mira</h2>
+            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[#8f8894]">
+              <span className="size-1.5 rounded-full bg-[#6fa087]" />
+              Local intelligence online
+            </p>
+          </div>
+          <span className="ml-auto rounded-full bg-[#eee8f5] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-[#735f90]">
+            OpenAI + fallback
+          </span>
+        </div>
+
+        <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6" aria-live="polite">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              {message.role === "assistant" ? (
+                <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-[#eee8f5] text-[#725e8f]">
+                  <Icon name="sparkles" className="size-4" />
+                </span>
+              ) : null}
+              <div
+                className={`max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 sm:max-w-[76%] ${
+                  message.role === "user"
+                    ? "rounded-br-md bg-[#3a3447] text-white"
+                    : "rounded-bl-md border border-[#eeeaf0] bg-white/70 text-[#5f5865]"
+                }`}
+              >
+                {message.content}
+                {message.role === "assistant" && message.source ? (
+                  <span
+                    className={`mt-3 block w-fit rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.08em] ${
+                      message.source === "openai"
+                        ? "bg-[#e4f0e9] text-[#4f7765]"
+                        : "bg-[#eee8f5] text-[#705e8c]"
+                    }`}
+                  >
+                    {message.source === "openai"
+                      ? "Generated by OpenAI"
+                      : "Fallback insight engine"}
+                  </span>
+                ) : null}
+                {message.role === "assistant" && message.note ? (
+                  <p className="mt-2 rounded-xl bg-[#fbf1e7] px-3 py-2 text-[11px] leading-5 text-[#8b654d]">
+                    {message.note}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          ))}
+          {isLoading ? (
+            <div className="flex gap-3">
+              <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-[#eee8f5] text-[#725e8f]">
+                <Icon name="sparkles" className="size-4" />
+              </span>
+              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#eeeaf0] bg-white/70 px-4 py-4">
+                {[0, 1, 2].map((dot) => (
+                  <span
+                    key={dot}
+                    className="size-1.5 animate-pulse rounded-full bg-[#8d7ba4]"
+                    style={{ animationDelay: `${dot * 140}ms` }}
+                  />
+                ))}
+                <span className="ml-2 text-xs font-semibold text-[#8a8290]">
+                  Analyzing merchandising signals
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <form onSubmit={handleSubmit} className="border-t border-[#eeeaf0] p-4 sm:p-5">
+          <div className="flex items-end gap-3 rounded-2xl border border-[#e7e2e9] bg-white/75 p-2 pl-4 focus-within:border-[#b9a8cf]">
+            <textarea
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              disabled={isLoading}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  askQuestion(input);
+                }
+              }}
+              rows={1}
+              placeholder="Ask about inventory, trends, markets, segments, or returns..."
+              className="max-h-28 min-h-10 flex-1 resize-none bg-transparent py-2 text-sm text-[#49424f] outline-none placeholder:text-[#aaa3ae]"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isLoading}
+              aria-label="Send message"
+              className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#3a3447] text-white transition hover:bg-[#4a4259] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Icon name="arrow" className="size-4" />
+            </button>
+          </div>
+          <p className="mt-2 text-center text-[10px] text-[#aaa3ae]">
+            OpenAI runs server-side; local analytics answer automatically if it is unavailable.
+          </p>
+        </form>
+      </section>
+
+      <aside className="soft-card h-fit rounded-3xl p-5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#9a86b2]">
+          Suggested questions
+        </p>
+        <h2 className="mt-2 text-lg font-bold tracking-[-0.02em] text-[#3d3745]">
+          Start with a decision.
+        </h2>
+        <div className="mt-5 space-y-2.5">
+          {suggestions.map((question) => (
+            <button
+              key={question}
+              type="button"
+              onClick={() => askQuestion(question)}
+              disabled={isLoading}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[#eeeaf0] bg-white/65 px-4 py-3 text-left text-xs font-semibold leading-5 text-[#68616e] transition hover:border-[#d7cce2] hover:bg-[#f7f3f9] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {question}
+              <Icon name="arrow" className="size-3.5 shrink-0 text-[#8d7ba4]" />
+            </button>
+          ))}
+        </div>
+        <div className="mt-5 rounded-2xl bg-gradient-to-br from-[#eee8f5] to-[#f8e9e5] p-4">
+          <p className="text-xs font-bold text-[#4a4352]">What Mira can analyze</p>
+          <p className="mt-2 text-[11px] leading-5 text-[#7f7784]">
+            180 local orders, 15 products, ten Indian markets, customer cohorts, inventory,
+            returns, and trend momentum.
+          </p>
+        </div>
+      </aside>
+    </div>
+  );
+}

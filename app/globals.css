@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #202135;
+  --muted: #74758a;
+  --lavender: #8b7bb7;
+  --lavender-soft: #eee9f7;
+  --peach: #f6aa8b;
+  --blush: #fbe8eb;
+  --mint: #dcefe6;
+  --cream: #faf8f4;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--cream);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  min-width: 320px;
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 88% 8%, rgba(235, 218, 242, 0.62), transparent 24rem),
+    radial-gradient(circle at 58% 96%, rgba(218, 239, 230, 0.55), transparent 27rem),
+    #faf8f4;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  color: #2d2940;
+  background: #ddd3ef;
+}
+
+.soft-card {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 18px 50px rgba(58, 48, 82, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.subtle-grid {
+  background-image:
+    linear-gradient(rgba(103, 93, 132, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(103, 93, 132, 0.07) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
 }
