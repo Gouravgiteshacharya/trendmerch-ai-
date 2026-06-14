@@ -94,6 +94,7 @@ export default function DashboardPage() {
           detail="momentum inside selected data"
           icon="revenue"
           tone="lavender"
+          href="/products?sort=revenue&highlight=revenue"
         />
         <StatCard
           label="Units Sold"
@@ -102,6 +103,7 @@ export default function DashboardPage() {
           detail={`across ${records.length} orders`}
           icon="units"
           tone="peach"
+          href="/products?sort=unitsSold&highlight=unitsSold"
         />
         <StatCard
           label="Stockout Risk"
@@ -110,6 +112,7 @@ export default function DashboardPage() {
           detail="high demand exposure"
           icon="risk"
           tone="mint"
+          href="/products?filter=stockout-risk&highlight=stockAvailable"
         />
         <StatCard
           label="Return Rate"
@@ -119,6 +122,7 @@ export default function DashboardPage() {
           icon="returns"
           tone="blue"
           inverseTrend
+          href="/products?sort=returnRate&highlight=returnRate"
         />
       </section>
 

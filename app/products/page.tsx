@@ -1,18 +1,52 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { DataEmptyState } from "@/components/DataEmptyState";
 import { DataLoadingState } from "@/components/DataLoadingState";
 import { PageHeader } from "@/components/PageHeader";
-import { ProductsTable } from "@/components/ProductsTable";
+import {
+  ProductsTable,
+  type ProductHighlightColumn,
+  type ProductSort,
+  type ProductsTableFilter,
+} from "@/components/ProductsTable";
+import { stockoutRiskProducts } from "@/lib/analytics";
 import { productIntelligence } from "@/lib/intelligence";
 import { useAnalyticsData } from "@/lib/use-analytics-data";
 
-export default function ProductsPage() {
+const supportedSorts: ProductSort[] = ["revenue", "unitsSold", "returnRate"];
+const supportedHighlights: ProductHighlightColumn[] = [
+  "revenue",
+  "unitsSold",
+  "stockAvailable",
+  "returnRate",
+  "riskLabel",
+];
+
+function ProductsPageContent() {
+  const searchParams = useSearchParams();
   const { records, timeframe, hasEnoughData, isHydrated } = useAnalyticsData();
   const products = hasEnoughData ? productIntelligence(records) : [];
+  const stockoutRiskIds = hasEnoughData
+    ? stockoutRiskProducts(records).map((product) => product.productId)
+    : [];
   const lowStock = products.filter((product) => product.risk === "Low Stock").length;
   const overstock = products.filter((product) => product.risk === "Overstock").length;
   const trending = products.filter((product) => product.risk === "Trending").length;
+  const sortParam = searchParams.get("sort");
+  const highlightParam = searchParams.get("highlight");
+  const filterParam = searchParams.get("filter");
+  const sort = supportedSorts.includes(sortParam as ProductSort)
+    ? (sortParam as ProductSort)
+    : undefined;
+  const highlightColumn = supportedHighlights.includes(
+    highlightParam as ProductHighlightColumn,
+  )
+    ? (highlightParam as ProductHighlightColumn)
+    : undefined;
+  const initialFilter: ProductsTableFilter =
+    filterParam === "stockout-risk" ? "Stockout Risk" : "All";
 
   return (
     <>
@@ -45,9 +79,24 @@ export default function ProductsPage() {
         ))}
       </section>
 
-      <ProductsTable products={products} />
+      <ProductsTable
+        key={`${sort ?? "default"}-${highlightColumn ?? "none"}-${initialFilter}`}
+        products={products}
+        stockoutRiskProductIds={stockoutRiskIds}
+        initialFilter={initialFilter}
+        sort={sort}
+        highlightColumn={highlightColumn}
+      />
         </>
       )}
     </>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<DataLoadingState />}>
+      <ProductsPageContent />
+    </Suspense>
   );
 }

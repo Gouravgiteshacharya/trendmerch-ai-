@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Icon, type IconName } from "@/components/icons";
 
 type StatCardProps = {
@@ -8,6 +9,7 @@ type StatCardProps = {
   icon: IconName;
   tone: "lavender" | "peach" | "mint" | "blue";
   inverseTrend?: boolean;
+  href?: string;
 };
 
 const tones = {
@@ -25,14 +27,13 @@ export function StatCard({
   icon,
   tone,
   inverseTrend = false,
+  href,
 }: StatCardProps) {
   const isPositive = change.trim().startsWith("+");
   const good = inverseTrend ? !isPositive : isPositive;
 
-  return (
-    <article
-      className={`rounded-3xl border border-[#d6c7b0] border-t-[3px] bg-[#faf6ee] ${tones[tone]} p-5 shadow-[0_16px_38px_rgba(70,55,38,0.07)]`}
-    >
+  const content = (
+    <>
       <div className="flex items-start justify-between">
         <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#786d60]">{label}</p>
         <span className="grid size-9 place-items-center rounded-xl border border-[#dfd2bf] bg-[#f3ecdf]">
@@ -46,6 +47,22 @@ export function StatCard({
         </span>
         <span className="text-[#918578]">{detail}</span>
       </div>
-    </article>
+    </>
   );
+
+  const className = `group rounded-3xl border border-[#d6c7b0] border-t-[3px] bg-[#faf6ee] ${tones[tone]} p-5 shadow-[0_16px_38px_rgba(70,55,38,0.07)] transition`;
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        aria-label={`Open product details for ${label}`}
+        className={`${className} hover:-translate-y-0.5 hover:border-[#bda989] hover:shadow-[0_20px_44px_rgba(70,55,38,0.11)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#9b8151]/20`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <article className={className}>{content}</article>;
 }
